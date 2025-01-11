@@ -1,118 +1,209 @@
+import 'package:cloudcommerce/pages/dashboard/settings_page.dart';
+import 'package:cloudcommerce/pages/todaysorders/orders_page.dart';
 import 'package:flutter/material.dart';
 import '../../styles/app_styles.dart';
+import '../../styles/bottom_nav_styles.dart';
+import '../../widgets/custom_bottom_nav.dart';
 import 'dashboard_styles.dart';
 
-class DashboardPage extends StatelessWidget {
-  DashboardPage({Key? key}) : super(key: key);
+class DashboardPage extends StatefulWidget {
+  const DashboardPage({Key? key}) : super(key: key);
 
-  final List<MenuOption> menuOptions = [
-    MenuOption(
-      title: 'My Account',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Inventory',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Search Machine',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Request',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Analytics',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Contact us',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Orders',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Maintenance',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Reports',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Settings',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Notifications',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Schedule',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Documents',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'History',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Help',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Suppliers',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Projects',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-    MenuOption(
-      title: 'Teams',
-      imagePath: 'assets/images/today.png',
-      onTap: () {},
-    ),
-  ];
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
 
+class _DashboardPageState extends State<DashboardPage> {
+  int _currentIndex = 0;
+  late List<MenuOption> menuOptions;
+
+  @override
+  void initState() {
+    super.initState();
+    menuOptions = [
+      MenuOption(
+        title: 'Stock item list',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Party List',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Users Order',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Order Monthwise list',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Current Month orders',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Todays Orders',
+        imagePath: 'assets/images/today.png',
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => OrdersPage()),
+          );
+        },
+      ),
+      MenuOption(
+        title: 'Currency Check',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Vehicle Route',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Todays Payment',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Todays Expense',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Orderwise Itemlist',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Employee Master List View',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Approval',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Employee Details',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Location List',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Accounts',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Daily Attendence',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+      MenuOption(
+        title: 'Organization Master',
+        imagePath: 'assets/images/today.png',
+        onTap: () {},
+      ),
+    ];
+  }
+
+  // In your DashboardPage build method:
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppStyles.primaryColor,
       body: SafeArea(
-        child: Column(
+        bottom: false, // Don't pad the bottom as BottomNav handles it
+        child: _buildBody(),
+      ),
+      floatingActionButton: SizedBox(
+        width: BottomNavStyles.getFabSize(context),
+        height: BottomNavStyles.getFabSize(context),
+        child: FloatingActionButton(
+          onPressed: () {
+            // Add your action here
+          },
+          child: Icon(
+            Icons.add,
+            size: BottomNavStyles.getFabIconSize(context),
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: CustomBottomNav(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          if (index == 3) {
+            // Profile icon index
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsPage()),
+            );
+          } else {
+            setState(() {
+              _currentIndex = index;
+            });
+          }
+        },
+      ),
+    );
+  }
+
+  // Update your _buildBody method:
+  Widget _buildBody() {
+    switch (_currentIndex) {
+      case 0:
+        return Column(
           children: [
             _buildHeader(context),
             Expanded(
               child: _buildContent(context),
             ),
           ],
-        ),
-      ),
-    );
+        );
+      case 1:
+        return Center(
+          child: Text(
+            'Search',
+            style: AppStyles.h1.copyWith(color: Colors.white),
+          ),
+        );
+      case 2:
+        return Center(
+          child: Text(
+            'Notifications',
+            style: AppStyles.h1.copyWith(color: Colors.white),
+          ),
+        );
+      case 3:
+        return Center(
+          child: Text(
+            'Profile',
+            style: AppStyles.h1.copyWith(color: Colors.white),
+          ),
+        );
+      default:
+        return Column(
+          children: [
+            _buildHeader(context),
+            Expanded(
+              child: _buildContent(context),
+            ),
+          ],
+        );
+    }
   }
 
   Widget _buildHeader(BuildContext context) {

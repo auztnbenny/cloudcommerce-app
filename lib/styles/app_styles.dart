@@ -88,6 +88,8 @@ class AppStyles {
     ),
   ];
 
+  static var fontFamily;
+
   // Responsive Helpers
   static double getResponsivePadding(BuildContext context) {
     final width = MediaQuery.of(context).size.width;

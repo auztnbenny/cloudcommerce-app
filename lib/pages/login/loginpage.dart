@@ -1,3 +1,4 @@
+import 'package:cloudcommerce/services/loginpage.dart';
 import 'package:flutter/material.dart';
 import '../dashboard/dashboard_page.dart';
 import '../../styles/app_styles.dart';
@@ -13,14 +14,26 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _apiService = ApiService();
+
   String? selectedYear;
   String? selectedVehicle;
   bool isPasswordVisible = false;
+  bool _isLoading = false;
 
-  final List<String> years = List.generate(
-    DateTime.now().year - 1999,
-    (index) => (2000 + index).toString(),
-  );
+  // final List<String> years = List.generate(
+  //   DateTime.now().year - 1999,
+  //   (index) => (2000 + index).toString(),
+  // );
+
+  final List<String> years = [
+    '2021',
+    '2022',
+    '2023',
+    '2024',
+    '2025',
+  ];
 
   final List<String> vehicleNumbers = [
     'Vehicle 1',
@@ -29,6 +42,56 @@ class _LoginPageState extends State<LoginPage> {
     'Vehicle 4',
     'Vehicle 5',
   ];
+
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (selectedYear == null || selectedVehicle == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select both year and vehicle'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await _apiService.login(
+        _usernameController.text.trim(),
+        _passwordController.text.trim(),
+        selectedYear!,
+        selectedVehicle!,
+      );
+
+      if (!mounted) return;
+
+      if (response.success && response.data?['ActionType'] == 0) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardPage()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -47,32 +110,35 @@ class _LoginPageState extends State<LoginPage> {
         child: Center(
           child: SingleChildScrollView(
             padding: AppStyles.getScreenPadding(context),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(height: AppStyles.spacing40),
-                  Text(
-                    'Sign In',
-                    style: AppStyles.h1,
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: AppStyles.spacing8),
-                  Text(
-                    'Hi! Welcome to Cloud Commerce!',
-                    style: AppStyles.body2,
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: AppStyles.spacing32),
-                  _buildFormFields(isSmallScreen),
-                  SizedBox(height: AppStyles.spacing24),
-                  _buildSignInButton(),
-                  SizedBox(height: AppStyles.spacing24),
-                  _buildSocialSignIn(),
-                  SizedBox(height: AppStyles.spacing24),
-                  _buildSignUpLink(),
-                ],
+            child: Form(
+              key: _formKey,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(height: AppStyles.spacing40),
+                    Text(
+                      'Sign In',
+                      style: AppStyles.h1,
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: AppStyles.spacing8),
+                    Text(
+                      'Hi! Welcome to Cloud Commerce!',
+                      style: AppStyles.body2,
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: AppStyles.spacing32),
+                    _buildFormFields(isSmallScreen),
+                    SizedBox(height: AppStyles.spacing24),
+                    _buildSignInButton(),
+                    SizedBox(height: AppStyles.spacing24),
+                    _buildSocialSignIn(),
+                    SizedBox(height: AppStyles.spacing24),
+                    _buildSignUpLink(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -84,17 +150,44 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildFormFields(bool isSmallScreen) {
     return Column(
       children: [
-        _buildTextField(
+        TextFormField(
           controller: _usernameController,
-          hintText: 'Username',
-          prefixIcon: Icons.person_outline,
+          style: AppStyles.body1,
+          decoration: LoginStyles.getTextFieldDecoration(
+            hintText: 'Username',
+            prefixIcon: Icons.person_outline,
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter username';
+            }
+            return null;
+          },
         ),
         SizedBox(height: AppStyles.spacing16),
-        _buildTextField(
+        TextFormField(
           controller: _passwordController,
-          hintText: 'Password',
-          prefixIcon: Icons.lock_outline,
-          isPassword: true,
+          obscureText: !isPasswordVisible,
+          style: AppStyles.body1,
+          decoration: LoginStyles.getTextFieldDecoration(
+            hintText: 'Password',
+            prefixIcon: Icons.lock_outline,
+            suffixIcon: IconButton(
+              icon: Icon(
+                isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                color: AppStyles.textSecondaryColor,
+              ),
+              onPressed: () {
+                setState(() => isPasswordVisible = !isPasswordVisible);
+              },
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter password';
+            }
+            return null;
+          },
         ),
         SizedBox(height: AppStyles.spacing16),
         if (isSmallScreen) ...[
@@ -151,36 +244,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    required IconData prefixIcon,
-    bool isPassword = false,
-  }) {
-    return TextField(
-      controller: controller,
-      obscureText: isPassword && !isPasswordVisible,
-      style: AppStyles.body1,
-      decoration: LoginStyles.getTextFieldDecoration(
-        hintText: hintText,
-        prefixIcon: prefixIcon,
-        suffixIcon: isPassword
-            ? IconButton(
-                icon: Icon(
-                  isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                  color: AppStyles.textSecondaryColor,
-                ),
-                onPressed: () {
-                  setState(() {
-                    isPasswordVisible = !isPasswordVisible;
-                  });
-                },
-              )
-            : null,
-      ),
-    );
-  }
-
   Widget _buildDropdown({
     required String? value,
     required List<String> items,
@@ -201,20 +264,29 @@ class _LoginPageState extends State<LoginPage> {
       icon: Icon(Icons.arrow_drop_down, color: AppStyles.textSecondaryColor),
       dropdownColor: AppStyles.cardColor,
       isExpanded: true,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select an option';
+        }
+        return null;
+      },
     );
   }
 
   Widget _buildSignInButton() {
     return ElevatedButton(
-      onPressed: () {
-        // You might want to add validation here
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DashboardPage()),
-        );
-      },
+      onPressed: _isLoading ? null : _handleLogin,
       style: LoginStyles.getButtonStyle(context),
-      child: const Text('Sign In'),
+      child: _isLoading
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+          : const Text('Sign In'),
     );
   }
 
