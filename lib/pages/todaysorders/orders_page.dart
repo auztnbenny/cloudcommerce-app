@@ -1,172 +1,284 @@
 import 'package:cloudcommerce/pages/todaysorders/orders_styles.dart';
+import 'package:cloudcommerce/services/todaysorder.dart';
 import 'package:flutter/material.dart';
-import '../../styles/app_styles.dart';
 
-class TodayOrdersPage extends StatefulWidget {
-  const TodayOrdersPage({Key? key}) : super(key: key);
+class OrdersPage extends StatefulWidget {
+  const OrdersPage({Key? key}) : super(key: key);
 
   @override
-  State<TodayOrdersPage> createState() => _TodayOrdersPageState();
+  State<OrdersPage> createState() => _OrdersPageState();
 }
 
-class _TodayOrdersPageState extends State<TodayOrdersPage> {
+class _OrdersPageState extends State<OrdersPage> {
+  final OrderService _orderService = OrderService();
   final TextEditingController _searchController = TextEditingController();
+  List<Order> orders = [];
+  List<Order> filteredOrders = [];
+  List<Employee> employees = [];
+  DateTime? selectedDate;
+  Employee? selectedEmployee;
+  bool isLoading = false;
 
-  final List<OrderData> orders = [
-    OrderData(
-      orderNo: 'ORD001',
-      party: 'John Doe Enterprises',
-      date: '12 Jan 2024',
-      time: '10:30 AM',
-      items: 5,
-      amount: 1500.00,
-      status: 'Pending',
-    ),
-    OrderData(
-      orderNo: 'ORD002',
-      party: 'Alice Smith & Co.',
-      date: '12 Jan 2024',
-      time: '11:45 AM',
-      items: 3,
-      amount: 850.00,
-      status: 'Confirmed',
-    ),
-    // Add more orders as needed
-  ];
+  @override
+  void initState() {
+    super.initState();
+    selectedDate = DateTime.now();
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    await fetchEmployees();
+    await fetchOrders();
+  }
+
+  Future<void> fetchEmployees() async {
+    try {
+      final employeeList = await _orderService.fetchEmployees();
+      setState(() => employees = employeeList);
+    } catch (e) {
+      _showError('Error loading employees: $e');
+    }
+  }
+
+  Future<void> fetchOrders() async {
+    setState(() => isLoading = true);
+    try {
+      final orderList =
+          await _orderService.fetchOrders(selectedDate, selectedEmployee);
+      setState(() {
+        orders = orderList;
+        filteredOrders = List.from(orders);
+      });
+    } catch (e) {
+      _showError('Error loading orders: $e');
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  void _filterOrders(String query) {
+    setState(() {
+      filteredOrders = orders
+          .where((order) =>
+              order.orderNo.toLowerCase().contains(query.toLowerCase()) ||
+              order.partyName.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
+  }
+
+  Future<void> _showFilterDialog() async {
+    Employee? tempEmployee = selectedEmployee;
+    DateTime? tempDate = selectedDate;
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.7,
+            decoration: OrderStyles.dialogDecoration,
+            padding: const EdgeInsets.all(OrderStyles.spacing),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Filter Orders',
+                    style: OrderStyles.dialogTitleStyle),
+                const SizedBox(height: OrderStyles.spacing),
+                DropdownButtonFormField<Employee>(
+                  value: tempEmployee,
+                  decoration: OrderStyles.filterInputDecoration.copyWith(
+                    labelText: 'Select Employee',
+                  ),
+                  items: [
+                    const DropdownMenuItem<Employee>(
+                      value: null,
+                      child: Text('All Employees'),
+                    ),
+                    ...employees.map((e) => DropdownMenuItem<Employee>(
+                          value: e,
+                          child: Text('${e.employeeName} (${e.empCode})'),
+                        )),
+                  ],
+                  onChanged: (value) => setState(() => tempEmployee = value),
+                ),
+                const SizedBox(height: OrderStyles.spacing),
+                CalendarDatePicker(
+                  initialDate: tempDate ?? DateTime.now(),
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2101),
+                  onDateChanged: (date) => setState(() => tempDate = date),
+                ),
+                const SizedBox(height: OrderStyles.spacing),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      style: OrderStyles.secondaryButtonStyle,
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    const SizedBox(width: OrderStyles.smallSpacing),
+                    ElevatedButton(
+                      style: OrderStyles.primaryButtonStyle,
+                      onPressed: () {
+                        this.setState(() {
+                          selectedEmployee = tempEmployee;
+                          selectedDate = tempDate;
+                        });
+                        Navigator.pop(context);
+                        fetchOrders();
+                      },
+                      child: const Text('Apply'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppStyles.backgroundColor,
-      appBar: _buildAppBar(),
+      backgroundColor: OrderStyles.backgroundColor,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(OrderStyles.appBarHeight),
+        child: Container(
+          decoration: OrderStyles.appBarDecoration,
+          child: SafeArea(
+            child: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title:
+                  const Text('Today\'s Orders', style: OrderStyles.headerStyle),
+              centerTitle: true,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.filter_list, color: Colors.white),
+                  onPressed: _showFilterDialog,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
       body: Column(
         children: [
-          _buildSearchBar(),
-          Expanded(child: _buildOrdersList()),
+          Padding(
+            padding: const EdgeInsets.all(OrderStyles.spacing),
+            child: TextField(
+              controller: _searchController,
+              decoration: OrderStyles.searchInputDecoration,
+              onChanged: _filterOrders,
+            ),
+          ),
+          if (selectedEmployee != null)
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: OrderStyles.spacing),
+              child: Wrap(
+                spacing: OrderStyles.smallSpacing,
+                children: [
+                  Chip(
+                    label: Text(selectedEmployee!.employeeName),
+                    onDeleted: () {
+                      setState(() => selectedEmployee = null);
+                      fetchOrders();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          Expanded(
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : filteredOrders.isEmpty
+                    ? const Center(child: Text('No orders found'))
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(OrderStyles.spacing),
+                        itemCount: filteredOrders.length,
+                        itemBuilder: (context, index) =>
+                            _buildOrderTile(filteredOrders[index]),
+                      ),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Handle new order
+          // Navigate to new order
         },
-        backgroundColor: Colors.black,
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: OrderStyles.primaryColor,
+        child: const Icon(Icons.add),
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(OrderStyles.appBarHeight),
-      child: Container(
-        decoration: OrderStyles.appBarDecoration,
-        child: SafeArea(
-          child: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: Text('Today\'s Orders', style: OrderStyles.headerTitleStyle),
-            centerTitle: true,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.filter_list, color: Colors.white),
-                onPressed: () {},
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          hintText: 'Search orders...',
-          hintStyle: AppStyles.body2,
-          prefixIcon: const Icon(Icons.search),
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.black),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOrdersList() {
-    return ListView.separated(
-      padding: OrderStyles.listPadding,
-      itemCount: orders.length,
-      separatorBuilder: (context, index) =>
-          const SizedBox(height: OrderStyles.cardSpacing),
-      itemBuilder: (context, index) => _buildOrderCard(orders[index]),
-    );
-  }
-
-  Widget _buildOrderCard(OrderData order) {
+  Widget _buildOrderTile(Order order) {
     return Container(
+      margin: const EdgeInsets.only(bottom: OrderStyles.cardSpacing),
       decoration: OrderStyles.orderCardDecoration,
-      padding: OrderStyles.cardPadding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Order #${order.orderNo}',
-                style: OrderStyles.orderNumberStyle,
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: OrderStyles.cardPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Order #${order.orderNo}',
+                  style: OrderStyles.orderNumberStyle,
                 ),
-                child: Text(
-                  order.status,
-                  style: AppStyles.caption.copyWith(color: Colors.black),
+                Container(
+                  padding: OrderStyles.chipPadding,
+                  decoration: OrderStyles.statusChipDecoration,
+                  child: Text(
+                    'Pending', // Replace with actual status
+                    style: OrderStyles.statusStyle,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: OrderStyles.sectionSpacing),
-          _buildInfoRow('Party', order.party),
-          const SizedBox(height: OrderStyles.infoSpacing),
-          Row(
-            children: [
-              Expanded(child: _buildInfoRow('Date', order.date)),
-              Expanded(child: _buildInfoRow('Time', order.time)),
-            ],
-          ),
-          const SizedBox(height: OrderStyles.infoSpacing),
-          Row(
-            children: [
-              Expanded(child: _buildInfoRow('Items', order.items.toString())),
-              Expanded(
-                child: _buildInfoRow(
-                  'Amount',
-                  '₹${order.amount.toStringAsFixed(2)}',
-                  valueStyle: OrderStyles.amountStyle,
+              ],
+            ),
+            const SizedBox(height: OrderStyles.sectionSpacing),
+            _buildInfoRow('Party', order.partyName),
+            const SizedBox(height: OrderStyles.infoSpacing),
+            Row(
+              children: [
+                Expanded(child: _buildInfoRow('Date', order.orderDate)),
+                Expanded(
+                    child: _buildInfoRow(
+                        'Time', '10:30 AM')), // Add time to your Order model
+              ],
+            ),
+            const SizedBox(height: OrderStyles.infoSpacing),
+            Row(
+              children: [
+                Expanded(
+                    child: _buildInfoRow(
+                        'Items', '5')), // Add items count to your Order model
+                Expanded(
+                  child: _buildInfoRow(
+                    'Amount',
+                    '₹${order.totAmt}',
+                    valueStyle: OrderStyles.amountStyle,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -181,30 +293,4 @@ class _TodayOrdersPageState extends State<TodayOrdersPage> {
       ],
     );
   }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-}
-
-class OrderData {
-  final String orderNo;
-  final String party;
-  final String date;
-  final String time;
-  final int items;
-  final double amount;
-  final String status;
-
-  OrderData({
-    required this.orderNo,
-    required this.party,
-    required this.date,
-    required this.time,
-    required this.items,
-    required this.amount,
-    required this.status,
-  });
 }

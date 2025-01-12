@@ -52,7 +52,7 @@ class _DashboardPageState extends State<DashboardPage> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => TodayOrdersPage()),
+            MaterialPageRoute(builder: (context) => OrdersPage()),
           );
         },
       ),
