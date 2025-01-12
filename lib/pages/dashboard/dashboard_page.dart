@@ -52,7 +52,7 @@ class _DashboardPageState extends State<DashboardPage> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => OrdersPage()),
+            MaterialPageRoute(builder: (context) => TodayOrdersPage()),
           );
         },
       ),
@@ -224,14 +224,14 @@ class _DashboardPageState extends State<DashboardPage> {
                 radius: 20,
                 backgroundColor: Colors.white,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.asset(
-                    'assets/images/today.png',
-                    height: 32,
-                    width: 32,
-                    fit: BoxFit.cover,
-                  ),
-                ),
+                    borderRadius: BorderRadius.circular(20),
+                    // child: Image.asset(
+                    //   'assets/images/today.png',
+                    //   height: 32,
+                    //   width: 32,
+                    //   fit: BoxFit.cover,
+                    // ),
+                    child: Icon(Icons.person)),
               ),
             ],
           ),
@@ -333,8 +333,8 @@ class _DashboardPageState extends State<DashboardPage> {
                   decoration: DashboardStyles.iconBoxDecoration,
                   child: Image.asset(
                     option.imagePath,
-                    height: iconSize,
-                    width: iconSize,
+                    height: iconSize * 3.5, // Increased size by 50%
+                    width: iconSize * 3.5, // Increased size by 50%
                     fit: BoxFit.contain,
                   ),
                 ),

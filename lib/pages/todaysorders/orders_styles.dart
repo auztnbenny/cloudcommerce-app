@@ -1,58 +1,74 @@
+import 'package:cloudcommerce/styles/app_styles.dart';
 import 'package:flutter/material.dart';
 
 class OrderStyles {
-  // Colors
-  static const Color primaryTextColor = Colors.black;
-  static const Color secondaryTextColor = Colors.grey;
-  static const Color statusColor = Colors.green;
-  static const Color ratingColor = Colors.amber;
-  static const Color fabColor = Colors.deepPurple;
-  static const Color backgroundColor = Colors.white;
-
-  // Dimensions
-  static const double imageSize = 50.0;
-  static const double spacing = 16.0;
-  static const double smallSpacing = 8.0;
-  static const double starSize = 16.0;
-  static const double borderRadius = 8.0;
-  static const double dividerHeight = 32.0;
+  // Colors - Using AppStyles colors
+  static const Color labelColor = AppStyles.secondaryColor;
 
   // Text Styles
-  static const TextStyle titleStyle = TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.bold,
-    color: primaryTextColor,
-  );
-
-  static const TextStyle orderIdStyle = TextStyle(
-    fontSize: 16,
+  static TextStyle headerTitleStyle = AppStyles.h1.copyWith(
+    color: Colors.white,
+    fontSize: 20,
     fontWeight: FontWeight.w600,
-    color: primaryTextColor,
   );
 
-  static const TextStyle dateTimeStyle = TextStyle(
-    fontSize: 14,
-    color: secondaryTextColor,
+  static TextStyle orderNumberStyle = AppStyles.h2.copyWith(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
   );
 
-  static const TextStyle statusStyle = TextStyle(
-    fontSize: 14,
-    color: statusColor,
+  static TextStyle labelStyle = AppStyles.body2.copyWith(
+    color: labelColor,
+    fontSize: 13,
   );
 
-  static const TextStyle ratingLabelStyle = TextStyle(
-    fontSize: 14,
-    color: secondaryTextColor,
+  static TextStyle valueStyle = AppStyles.body1.copyWith(
+    color: AppStyles.textPrimaryColor,
+    fontSize: 15,
+  );
+
+  static TextStyle amountStyle = AppStyles.body1.copyWith(
+    color: Colors.green,
+    fontWeight: FontWeight.w600,
+    fontSize: 16,
   );
 
   // Decorations
-  static BoxDecoration imageDecoration(String imagePath) => BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius),
-        image: DecorationImage(
-          image: AssetImage(imagePath),
-          fit: BoxFit.cover,
-        ),
-      );
+  static BoxDecoration appBarDecoration = BoxDecoration(
+    color: Colors.black,
+    borderRadius: const BorderRadius.only(
+      bottomLeft: Radius.circular(20),
+      bottomRight: Radius.circular(20),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.1),
+        blurRadius: 10,
+        offset: const Offset(0, 2),
+      ),
+    ],
+  );
 
-  static const EdgeInsets listPadding = EdgeInsets.all(spacing);
+  static BoxDecoration orderCardDecoration = BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.05),
+        blurRadius: 8,
+        offset: const Offset(0, 2),
+      ),
+    ],
+  );
+
+  // Dimensions
+  static const double appBarHeight = 65.0;
+  static const double searchBarHeight = 50.0;
+
+  // Spacing
+  static const EdgeInsets cardPadding = EdgeInsets.all(16.0);
+  static const EdgeInsets listPadding = EdgeInsets.all(16.0);
+  static const double cardSpacing = 12.0;
+  static const double infoSpacing = 8.0;
+  static const double sectionSpacing = 16.0;
 }

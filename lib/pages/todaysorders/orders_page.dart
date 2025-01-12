@@ -1,77 +1,108 @@
 import 'package:cloudcommerce/pages/todaysorders/orders_styles.dart';
 import 'package:flutter/material.dart';
+import '../../styles/app_styles.dart';
 
-class OrdersPage extends StatelessWidget {
-  OrdersPage({Key? key}) : super(key: key);
+class TodayOrdersPage extends StatefulWidget {
+  const TodayOrdersPage({Key? key}) : super(key: key);
 
-  final List<OrderItem> orders = [
-    OrderItem(
-      id: '999602',
-      date: '25 Dec 2023',
-      time: '3:52 PM',
-      status: 'Delivered',
-      rating: 5,
-      image: 'assets/images/today.png',
+  @override
+  State<TodayOrdersPage> createState() => _TodayOrdersPageState();
+}
+
+class _TodayOrdersPageState extends State<TodayOrdersPage> {
+  final TextEditingController _searchController = TextEditingController();
+
+  final List<OrderData> orders = [
+    OrderData(
+      orderNo: 'ORD001',
+      party: 'John Doe Enterprises',
+      date: '12 Jan 2024',
+      time: '10:30 AM',
+      items: 5,
+      amount: 1500.00,
+      status: 'Pending',
     ),
-    OrderItem(
-      id: '684032',
-      date: '15 Dec 2023',
-      time: '1:05 PM',
-      status: 'Delivered',
-      rating: 4,
-      image: 'assets/images/today.png',
+    OrderData(
+      orderNo: 'ORD002',
+      party: 'Alice Smith & Co.',
+      date: '12 Jan 2024',
+      time: '11:45 AM',
+      items: 3,
+      amount: 850.00,
+      status: 'Confirmed',
     ),
-    OrderItem(
-      id: '558123',
-      date: '14 Dec 2023',
-      time: '5:30 PM',
-      status: 'Delivered',
-      rating: 4,
-      image: 'assets/images/today.png',
-    ),
-    OrderItem(
-      id: '444302',
-      date: '13 Dec 2023',
-      time: '2:45 PM',
-      status: 'Delivered',
-      rating: 5,
-      image: 'assets/images/today.png',
-    ),
+    // Add more orders as needed
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: OrderStyles.backgroundColor,
-      appBar: _buildAppBar(context),
-      body: _buildOrdersList(),
+      backgroundColor: AppStyles.backgroundColor,
+      appBar: _buildAppBar(),
+      body: Column(
+        children: [
+          _buildSearchBar(),
+          Expanded(child: _buildOrdersList()),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: OrderStyles.fabColor,
+        onPressed: () {
+          // Handle new order
+        },
+        backgroundColor: Colors.black,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: OrderStyles.backgroundColor,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: OrderStyles.primaryTextColor),
-        onPressed: () => Navigator.pop(context),
-      ),
-      title: const Text(
-        'My Orders',
-        style: OrderStyles.titleStyle,
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.filter_list,
-              color: OrderStyles.primaryTextColor),
-          onPressed: () {},
+  PreferredSizeWidget _buildAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(OrderStyles.appBarHeight),
+      child: Container(
+        decoration: OrderStyles.appBarDecoration,
+        child: SafeArea(
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Text('Today\'s Orders', style: OrderStyles.headerTitleStyle),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.filter_list, color: Colors.white),
+                onPressed: () {},
+              ),
+            ],
+          ),
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: 'Search orders...',
+          hintStyle: AppStyles.body2,
+          prefixIcon: const Icon(Icons.search),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.black),
+          ),
+        ),
+      ),
     );
   }
 
@@ -79,87 +110,101 @@ class OrdersPage extends StatelessWidget {
     return ListView.separated(
       padding: OrderStyles.listPadding,
       itemCount: orders.length,
-      separatorBuilder: (context, index) => const Divider(
-        height: OrderStyles.dividerHeight,
-      ),
-      itemBuilder: (context, index) => _buildOrderItem(orders[index]),
+      separatorBuilder: (context, index) =>
+          const SizedBox(height: OrderStyles.cardSpacing),
+      itemBuilder: (context, index) => _buildOrderCard(orders[index]),
     );
   }
 
-  Widget _buildOrderItem(OrderItem order) {
-    return Row(
-      children: [
-        Container(
-          width: OrderStyles.imageSize,
-          height: OrderStyles.imageSize,
-          decoration: OrderStyles.imageDecoration(order.image),
-        ),
-        const SizedBox(width: OrderStyles.spacing),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildOrderCard(OrderData order) {
+    return Container(
+      decoration: OrderStyles.orderCardDecoration,
+      padding: OrderStyles.cardPadding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Order# ${order.id}',
-                    style: OrderStyles.orderIdStyle,
-                  ),
-                  Text(
-                    '${order.date}, ${order.time}',
-                    style: OrderStyles.dateTimeStyle,
-                  ),
-                ],
+              Text(
+                'Order #${order.orderNo}',
+                style: OrderStyles.orderNumberStyle,
               ),
-              const SizedBox(height: OrderStyles.smallSpacing),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    order.status,
-                    style: OrderStyles.statusStyle,
-                  ),
-                  Row(
-                    children: [
-                      const Text(
-                        'Your Rating  ',
-                        style: OrderStyles.ratingLabelStyle,
-                      ),
-                      ...List.generate(
-                        5,
-                        (index) => Icon(
-                          index < order.rating ? Icons.star : Icons.star_border,
-                          size: OrderStyles.starSize,
-                          color: OrderStyles.ratingColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  order.status,
+                  style: AppStyles.caption.copyWith(color: Colors.black),
+                ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: OrderStyles.sectionSpacing),
+          _buildInfoRow('Party', order.party),
+          const SizedBox(height: OrderStyles.infoSpacing),
+          Row(
+            children: [
+              Expanded(child: _buildInfoRow('Date', order.date)),
+              Expanded(child: _buildInfoRow('Time', order.time)),
+            ],
+          ),
+          const SizedBox(height: OrderStyles.infoSpacing),
+          Row(
+            children: [
+              Expanded(child: _buildInfoRow('Items', order.items.toString())),
+              Expanded(
+                child: _buildInfoRow(
+                  'Amount',
+                  '₹${order.amount.toStringAsFixed(2)}',
+                  valueStyle: OrderStyles.amountStyle,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, {TextStyle? valueStyle}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: OrderStyles.labelStyle),
+        const SizedBox(height: 4),
+        Text(value, style: valueStyle ?? OrderStyles.valueStyle),
       ],
     );
   }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 }
 
-class OrderItem {
-  final String id;
+class OrderData {
+  final String orderNo;
+  final String party;
   final String date;
   final String time;
+  final int items;
+  final double amount;
   final String status;
-  final int rating;
-  final String image;
 
-  OrderItem({
-    required this.id,
+  OrderData({
+    required this.orderNo,
+    required this.party,
     required this.date,
     required this.time,
+    required this.items,
+    required this.amount,
     required this.status,
-    required this.rating,
-    required this.image,
   });
 }
