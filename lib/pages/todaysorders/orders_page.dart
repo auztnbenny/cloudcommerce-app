@@ -1,3 +1,4 @@
+import 'package:cloudcommerce/pages/todaysorders/new_order_page.dart';
 import 'package:cloudcommerce/pages/todaysorders/orders_styles.dart';
 import 'package:cloudcommerce/services/todaysorder.dart';
 import 'package:flutter/material.dart';
@@ -217,7 +218,10 @@ class _OrdersPageState extends State<OrdersPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigate to new order
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => NewOrderPage()),
+          );
         },
         backgroundColor: OrderStyles.primaryColor,
         child: const Icon(Icons.add),

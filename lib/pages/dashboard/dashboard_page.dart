@@ -23,27 +23,27 @@ class _DashboardPageState extends State<DashboardPage> {
     menuOptions = [
       MenuOption(
         title: 'Stock item list',
-        imagePath: 'assets/images/today.png',
+        imagePath: 'assets/images/stock.jpg',
         onTap: () {},
       ),
       MenuOption(
         title: 'Party List',
-        imagePath: 'assets/images/today.png',
+        imagePath: 'assets/images/party.png',
         onTap: () {},
       ),
       MenuOption(
         title: 'Users Order',
-        imagePath: 'assets/images/today.png',
+        imagePath: 'assets/images/guest-list.png',
         onTap: () {},
       ),
       MenuOption(
         title: 'Order Monthwise list',
-        imagePath: 'assets/images/today.png',
+        imagePath: 'assets/images/monthwise.png',
         onTap: () {},
       ),
       MenuOption(
         title: 'Current Month orders',
-        imagePath: 'assets/images/today.png',
+        imagePath: 'assets/images/month.png',
         onTap: () {},
       ),
       MenuOption(
