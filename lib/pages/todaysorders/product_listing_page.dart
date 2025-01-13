@@ -1,4 +1,5 @@
 // product_listing_page.dart
+import 'package:cloudcommerce/pages/todaysorders/popup.dart';
 import 'package:cloudcommerce/services/product_listing.dart';
 import 'package:cloudcommerce/styles/app_styles.dart';
 import 'package:flutter/material.dart';
@@ -238,30 +239,46 @@ class _ProductListingPageState extends State<ProductListingPage> {
   }
 
   Widget _buildProductDetails(dynamic product, bool isInCart) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Flexible(
-          child: Text(
-            product['itm_NAM'] ?? '',
-            style: AppStyles.h3,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        SizedBox(height: AppStyles.spacing4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '₹${product['SalePrice'] ?? ''}',
-              style: AppStyles.body1.copyWith(color: AppStyles.primaryColor),
+    return GestureDetector(
+      onTap: () => _showProductDialog(product),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Text(
+              product['itm_NAM'] ?? '',
+              style: AppStyles.h3,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            _buildProductCartButton(product, isInCart),
-          ],
-        ),
-      ],
+          ),
+          SizedBox(height: AppStyles.spacing4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '₹${product['SalePrice'] ?? ''}',
+                style: AppStyles.body1.copyWith(color: AppStyles.primaryColor),
+              ),
+              _buildProductCartButton(product, isInCart),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showProductDialog(dynamic product) {
+    showDialog(
+      context: context,
+      builder: (context) => ProductDialog(
+        product: product,
+        onDone: (Map<String, dynamic> updatedProduct) {
+          // Handle the updated product, for example:
+          _controller.handleCart(updatedProduct);
+        },
+      ),
     );
   }
 

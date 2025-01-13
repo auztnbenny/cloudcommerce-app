@@ -94,11 +94,18 @@ class ProductListingController extends ChangeNotifier {
         body: {
           'title': 'GetGroupMasterList',
           'description': '',
-          'ReqGroupType': '',
+          'ReqGroupType': 'B',
           'ReqGroupName': '',
-          'ReqSerType': '',
+          'ReqSerType': '0',
         },
       );
+      groups = products
+          .map((product) => product['ProductGroup']?.toString() ?? '')
+          .where((group) => group.isNotEmpty)
+          .toSet()
+          .toList();
+
+      groups.sort((a, b) => a.compareTo(b));
 
       if (response.statusCode == 200) {
         final responseBody = response.body;
@@ -109,7 +116,7 @@ class ProductListingController extends ChangeNotifier {
           if (jsonResponse.isNotEmpty && jsonResponse[0]['JSONData1'] != null) {
             final jsonData1 = json.decode(jsonResponse[0]['JSONData1']);
             groups = jsonData1
-                .map<String>((item) => item['GRP_NAM'].toString())
+                .map<String>((item) => item['ProductGroup'].toString())
                 .toSet()
                 .toList();
             groups.sort();
@@ -133,7 +140,7 @@ class ProductListingController extends ChangeNotifier {
     filteredProducts = products.where((product) {
       final productName = product['itm_NAM']?.toString().toLowerCase() ?? '';
       final searchLower = searchQuery.toLowerCase();
-      final productGroup = product['GRP_NAM']?.toString() ?? '';
+      final productGroup = product['ProductGroup']?.toString() ?? '';
 
       return productName.contains(searchLower) &&
           (selectedGroup.isEmpty || productGroup == selectedGroup);
