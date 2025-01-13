@@ -236,7 +236,10 @@ class _OrdersPageState extends State<OrdersPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProductListingPage(),
+            builder: (context) => ProductListingPage(
+              orderId: order.orderNo,
+              userName: order.partyName,
+            ),
           ),
         );
       },

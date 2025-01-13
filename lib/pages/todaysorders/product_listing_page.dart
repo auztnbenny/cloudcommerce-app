@@ -6,6 +6,15 @@ import 'package:flutter/material.dart';
 import 'product_listing_style.dart';
 
 class ProductListingPage extends StatefulWidget {
+  final String orderId;
+  final String userName;
+
+  const ProductListingPage({
+    Key? key,
+    required this.orderId,
+    required this.userName,
+  }) : super(key: key);
+
   @override
   _ProductListingPageState createState() => _ProductListingPageState();
 }
@@ -272,10 +281,11 @@ class _ProductListingPageState extends State<ProductListingPage> {
   void _showProductDialog(dynamic product) {
     showDialog(
       context: context,
-      builder: (context) => ProductDialog(
+      builder: (context) => OrderDetailsPage(
+        orderId: widget.orderId,
+        userName: widget.userName,
         product: product,
         onDone: (Map<String, dynamic> updatedProduct) {
-          // Handle the updated product, for example:
           _controller.handleCart(updatedProduct);
         },
       ),

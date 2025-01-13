@@ -1,44 +1,41 @@
-import 'package:cloudcommerce/pages/todaysorders/popup.dart';
 import 'package:flutter/material.dart';
 import 'package:cloudcommerce/styles/app_styles.dart';
 
-class ProductDialogStyle {
+class OrderDetailsStyle {
   TextStyle get labelStyle => AppStyles.body2.copyWith(
         fontWeight: FontWeight.w600,
       );
 
-  InputDecoration get inputDecoration => InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
-          borderSide: BorderSide(color: AppStyles.secondaryColor),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
-          borderSide: BorderSide(
-            color: AppStyles.secondaryColor.withOpacity(0.3),
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
-          borderSide: BorderSide(color: AppStyles.primaryColor),
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: AppStyles.spacing12,
-          vertical: AppStyles.spacing8,
-        ),
-        filled: true,
-        fillColor: AppStyles.backgroundColor,
+  TextStyle get valueStyle => AppStyles.body1;
+
+  TextStyle get totalLabelStyle => AppStyles.h3.copyWith(
+        fontWeight: FontWeight.bold,
       );
 
-  BoxDecoration get headerDecoration => BoxDecoration(
+  TextStyle get totalValueStyle => AppStyles.h2.copyWith(
         color: AppStyles.primaryColor,
+        fontWeight: FontWeight.bold,
+      );
+
+  TextStyle get tableHeaderStyle => AppStyles.body2.copyWith(
+        fontWeight: FontWeight.bold,
+      );
+
+  TextStyle get tableContentStyle => AppStyles.body2;
+
+  RoundedRectangleBorder get cardShape => RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+      );
+
+  BoxDecoration get summaryContainerDecoration => BoxDecoration(
+        color: AppStyles.primaryColor.withOpacity(0.05),
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppStyles.radiusMedium),
-          topRight: Radius.circular(AppStyles.radiusMedium),
+          bottomLeft: Radius.circular(AppStyles.radiusMedium),
+          bottomRight: Radius.circular(AppStyles.radiusMedium),
         ),
       );
 
-  ButtonStyle get primaryButtonStyle => ElevatedButton.styleFrom(
+  ButtonStyle get retryButtonStyle => ElevatedButton.styleFrom(
         backgroundColor: AppStyles.primaryColor,
         padding: EdgeInsets.symmetric(
           horizontal: AppStyles.spacing24,
