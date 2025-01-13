@@ -51,9 +51,14 @@ class _ProductListingPageState extends State<ProductListingPage> {
 
   AppBar _buildAppBar() {
     return AppBar(
-      title: Text('Products', style: AppStyles.h1),
-      backgroundColor: AppStyles.backgroundColor,
+      title: Text('Products', style: AppStyles.appBarTitleStyle),
+      centerTitle: true,
+      backgroundColor: Colors.transparent,
       elevation: 0,
+      toolbarHeight: AppStyles.appBarHeight,
+      flexibleSpace: Container(
+        decoration: AppStyles.appBarDecoration,
+      ),
       actions: [_buildCartButton()],
     );
   }
@@ -65,7 +70,8 @@ class _ProductListingPageState extends State<ProductListingPage> {
         return Stack(
           children: [
             IconButton(
-              icon: Icon(Icons.shopping_cart, color: AppStyles.primaryColor),
+              icon: Icon(Icons.shopping_cart,
+                  color: const Color.fromARGB(255, 255, 254, 254)),
               onPressed: _controller.navigateToCart,
             ),
             if (_controller.cartCount > 0)
@@ -239,7 +245,7 @@ class _ProductListingPageState extends State<ProductListingPage> {
         Flexible(
           child: Text(
             product['itm_NAM'] ?? '',
-            style: AppStyles.h2,
+            style: AppStyles.h3,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),

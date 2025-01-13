@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloudcommerce/styles/app_styles.dart';  // Add this import
 
 class OrderStyles {
   // Colors
@@ -12,11 +13,7 @@ class OrderStyles {
   static const Color statusBackground = Colors.black12;
 
   // Text Styles
-  static const TextStyle headerStyle = TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.bold,
-    color: Colors.white,
-  );
+  static const TextStyle headerStyle = AppStyles.appBarTitleStyle;  // Use AppStyles instead
 
   static const TextStyle orderNumberStyle = TextStyle(
     fontSize: 16,
@@ -73,20 +70,7 @@ class OrderStyles {
   );
 
   // Decorations
-  static final BoxDecoration appBarDecoration = BoxDecoration(
-    color: primaryColor,
-    borderRadius: const BorderRadius.only(
-      bottomLeft: Radius.circular(20),
-      bottomRight: Radius.circular(20),
-    ),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.1),
-        blurRadius: 10,
-        offset: const Offset(0, 2),
-      ),
-    ],
-  );
+  static final BoxDecoration appBarDecoration = AppStyles.appBarDecoration;  // Use AppStyles instead
 
   static final BoxDecoration orderCardDecoration = BoxDecoration(
     // Renamed from cardDecoration

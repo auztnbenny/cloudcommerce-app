@@ -29,6 +29,11 @@ class AppStyles {
         fontWeight: FontWeight.w600,
         color: textPrimaryColor,
       );
+  static TextStyle get h3 => GoogleFonts.montserrat(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: textPrimaryColor,
+      );
 
   static TextStyle get body1 => GoogleFonts.montserrat(
         fontSize: 16,
@@ -111,6 +116,36 @@ class AppStyles {
     if (width <= tabletBreakpoint) return spacing16;
     return spacing24;
   }
+
+  // AppBar Styles
+  static const double appBarHeight = 60.0;
+
+  static const TextStyle appBarTitleStyle = TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+  );
+
+  static final BoxDecoration appBarDecoration = BoxDecoration(
+    color: primaryColor,
+    borderRadius: const BorderRadius.only(
+      bottomLeft: Radius.circular(15),
+      bottomRight: Radius.circular(15),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.1),
+        blurRadius: 10,
+        offset: const Offset(0, 2),
+      ),
+    ],
+  );
+
+  static const TextStyle headerStyle = TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+  );
 
   static EdgeInsets getScreenPadding(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
