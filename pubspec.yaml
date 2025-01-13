@@ -14,6 +14,7 @@ dependencies:
   google_fonts: ^6.2.1
   geolocator: ^13.0.2
   intl: ^0.20.1
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
@@ -27,7 +28,9 @@ flutter:
     - assets/icons/google.png
     - assets/images/today.png
     - assets/icons/
+    - assets/images/mockup.jpg
     - assets/images/
+
 
 
 

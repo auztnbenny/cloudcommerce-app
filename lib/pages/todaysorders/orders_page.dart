@@ -2,6 +2,7 @@ import 'package:cloudcommerce/pages/todaysorders/new_order_page.dart';
 import 'package:cloudcommerce/pages/todaysorders/orders_styles.dart';
 import 'package:cloudcommerce/services/todaysorder.dart';
 import 'package:flutter/material.dart';
+import 'package:cloudcommerce/pages/todaysorders/product_listing_page.dart';
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({Key? key}) : super(key: key);
@@ -230,58 +231,68 @@ class _OrdersPageState extends State<OrdersPage> {
   }
 
   Widget _buildOrderTile(Order order) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: OrderStyles.cardSpacing),
-      decoration: OrderStyles.orderCardDecoration,
-      child: Padding(
-        padding: OrderStyles.cardPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Order #${order.orderNo}',
-                  style: OrderStyles.orderNumberStyle,
-                ),
-                Container(
-                  padding: OrderStyles.chipPadding,
-                  decoration: OrderStyles.statusChipDecoration,
-                  child: Text(
-                    'Pending', // Replace with actual status
-                    style: OrderStyles.statusStyle,
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductListingPage(),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: OrderStyles.cardSpacing),
+        decoration: OrderStyles.orderCardDecoration,
+        child: Padding(
+          padding: OrderStyles.cardPadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Order #${order.orderNo}',
+                    style: OrderStyles.orderNumberStyle,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: OrderStyles.sectionSpacing),
-            _buildInfoRow('Party', order.partyName),
-            const SizedBox(height: OrderStyles.infoSpacing),
-            Row(
-              children: [
-                Expanded(child: _buildInfoRow('Date', order.orderDate)),
-                Expanded(
-                    child: _buildInfoRow(
-                        'Time', '10:30 AM')), // Add time to your Order model
-              ],
-            ),
-            const SizedBox(height: OrderStyles.infoSpacing),
-            Row(
-              children: [
-                Expanded(
-                    child: _buildInfoRow(
-                        'Items', '5')), // Add items count to your Order model
-                Expanded(
-                  child: _buildInfoRow(
-                    'Amount',
-                    '₹${order.totAmt}',
-                    valueStyle: OrderStyles.amountStyle,
+                  Container(
+                    padding: OrderStyles.chipPadding,
+                    decoration: OrderStyles.statusChipDecoration,
+                    child: Text(
+                      'Pending', // Replace with actual status
+                      style: OrderStyles.statusStyle,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+              const SizedBox(height: OrderStyles.sectionSpacing),
+              _buildInfoRow('Party', order.partyName),
+              const SizedBox(height: OrderStyles.infoSpacing),
+              Row(
+                children: [
+                  Expanded(child: _buildInfoRow('Date', order.orderDate)),
+                  Expanded(
+                      child: _buildInfoRow(
+                          'Time', '10:30 AM')), // Add time to your Order model
+                ],
+              ),
+              const SizedBox(height: OrderStyles.infoSpacing),
+              Row(
+                children: [
+                  Expanded(
+                      child: _buildInfoRow(
+                          'Items', '5')), // Add items count to your Order model
+                  Expanded(
+                    child: _buildInfoRow(
+                      'Amount',
+                      '₹${order.totAmt}',
+                      valueStyle: OrderStyles.amountStyle,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
