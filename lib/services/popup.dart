@@ -11,6 +11,52 @@ class OrderDetailsService {
     return DateFormat('dd-MM-yyyy').format(date);
   }
 
+  Future<Map<String, dynamic>> fetchItemMaster({
+    required String itemCode,
+    required String partyCode,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(baseUrl),
+        body: {
+          'title': 'GetItemMasterByCode',
+          'description': 'Request For Stock Item Display List',
+          'ReqItemCode': itemCode,
+          'ReqPartyCode': partyCode,
+          'ReqWithStock': 'yes',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Server returned status code: ${response.statusCode}');
+      }
+
+      final responseBody = response.body;
+      final jsonStr = responseBody.split('||JasonEnd')[0].trim();
+      final List<dynamic> jsonResponse = json.decode(jsonStr);
+
+      if (jsonResponse.isEmpty) {
+        throw Exception('Empty response from server');
+      }
+
+      final data = jsonResponse[0];
+      if (data['ActionType'] != 1 || data['ErrorCode'] != '0') {
+        throw Exception(data['ErrorMessage'] ?? 'Failed to fetch item details');
+      }
+
+      final itemDetails = json.decode(data['JSONData1'])[0];
+      return itemDetails;
+    } catch (e, stackTrace) {
+      developer.log(
+        'Error in fetchItemMaster',
+        error: e,
+        stackTrace: stackTrace,
+        name: 'OrderDetailsService',
+      );
+      rethrow;
+    }
+  }
+
   Future<Map<String, dynamic>> fetchOrderDetails({
     required String orderId,
     required String userName,
@@ -18,11 +64,6 @@ class OrderDetailsService {
   }) async {
     try {
       final formattedDate = _formatDateForApi(orderDate ?? DateTime.now());
-
-      developer.log(
-        'Fetching order details: OrderID: $orderId, Username: $userName, Date: $formattedDate',
-        name: 'OrderDetailsService',
-      );
 
       final response = await http.post(
         Uri.parse(baseUrl),
@@ -50,7 +91,6 @@ class OrderDetailsService {
       final data = jsonResponse[0];
       final int actionType = data['ActionType'] ?? -1;
 
-      // Only process data if ActionType > 0 (matching React implementation)
       if (actionType > 0) {
         Map<String, dynamic> result = {
           'orderMaster': null,
@@ -58,7 +98,6 @@ class OrderDetailsService {
           'blankProduct': null
         };
 
-        // Parse order master (JSONData1)
         if (data['JSONData1'] != null && data['JSONData1'] is String) {
           final masterData = json.decode(data['JSONData1']);
           if (masterData is List && masterData.isNotEmpty) {
@@ -66,7 +105,6 @@ class OrderDetailsService {
           }
         }
 
-        // Parse order details (JSONData2)
         if (data['JSONData2'] != null && data['JSONData2'] is String) {
           final detailsData = json.decode(data['JSONData2']);
           if (detailsData is List) {
@@ -74,7 +112,6 @@ class OrderDetailsService {
           }
         }
 
-        // Parse blank product template (JSONData3)
         if (data['JSONData3'] != null && data['JSONData3'] is String) {
           final templateData = json.decode(data['JSONData3']);
           if (templateData is List && templateData.isNotEmpty) {
@@ -84,7 +121,6 @@ class OrderDetailsService {
 
         return result;
       } else {
-        // If ActionType <= 0, throw error with message from response
         throw Exception(
             data['ErrorMessage'] ?? 'Failed to fetch order details');
       }

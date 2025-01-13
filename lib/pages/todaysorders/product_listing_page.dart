@@ -282,12 +282,10 @@ class _ProductListingPageState extends State<ProductListingPage> {
     showDialog(
       context: context,
       builder: (context) => OrderDetailsPage(
-        orderId: widget.orderId,
-        userName: widget.userName,
-        product: product,
-        onDone: (Map<String, dynamic> updatedProduct) {
-          _controller.handleCart(updatedProduct);
-        },
+        itemCode: product['itm_COD']?.toString() ?? '',
+        partyCode: widget.orderId,
+        onDone: (Map<String, dynamic> updatedProduct) => 
+          _controller.handleCart(updatedProduct),
       ),
     );
   }

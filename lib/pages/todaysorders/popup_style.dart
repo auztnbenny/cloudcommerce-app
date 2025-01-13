@@ -4,39 +4,71 @@ import 'package:cloudcommerce/styles/app_styles.dart';
 class OrderDetailsStyle {
   TextStyle get labelStyle => AppStyles.body2.copyWith(
         fontWeight: FontWeight.w600,
+        color: AppStyles.textSecondaryColor,
       );
 
   TextStyle get valueStyle => AppStyles.body1;
 
-  TextStyle get totalLabelStyle => AppStyles.h3.copyWith(
-        fontWeight: FontWeight.bold,
+  TextStyle get stockAvailableStyle => AppStyles.body2.copyWith(
+        color: Colors.green,
+        fontWeight: FontWeight.w500,
       );
 
-  TextStyle get totalValueStyle => AppStyles.h2.copyWith(
-        color: AppStyles.primaryColor,
-        fontWeight: FontWeight.bold,
+  TextStyle get stockUnavailableStyle => AppStyles.body2.copyWith(
+        color: Colors.red,
+        fontWeight: FontWeight.w500,
       );
 
-  TextStyle get tableHeaderStyle => AppStyles.body2.copyWith(
-        fontWeight: FontWeight.bold,
+  TextStyle get inputLabelStyle => AppStyles.body1.copyWith(
+        fontWeight: FontWeight.w600,
+        color: AppStyles.textPrimaryColor,
       );
 
-  TextStyle get tableContentStyle => AppStyles.body2;
-
-  RoundedRectangleBorder get cardShape => RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+  InputDecoration getInputDecoration({String? label, String? hint}) =>
+      InputDecoration(
+        labelText: label,
+        hintText: hint,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
+          borderSide: BorderSide(color: AppStyles.secondaryColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
+          borderSide:
+              BorderSide(color: AppStyles.secondaryColor.withOpacity(0.5)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
+          borderSide: BorderSide(color: AppStyles.primaryColor),
+        ),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppStyles.spacing12,
+          vertical: AppStyles.spacing8,
+        ),
+        filled: true,
+        fillColor: Colors.white,
       );
 
-  BoxDecoration get summaryContainerDecoration => BoxDecoration(
-        color: AppStyles.primaryColor.withOpacity(0.05),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(AppStyles.radiusMedium),
-          bottomRight: Radius.circular(AppStyles.radiusMedium),
+  ButtonStyle get expandMoreButtonStyle => ButtonStyle(
+        padding: MaterialStateProperty.all(EdgeInsets.zero),
+        minimumSize: MaterialStateProperty.all(Size(0, 0)),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      );
+
+  ButtonStyle get primaryButtonStyle => ElevatedButton.styleFrom(
+        backgroundColor: AppStyles.primaryColor,
+        padding: EdgeInsets.symmetric(
+          horizontal: AppStyles.spacing24,
+          vertical: AppStyles.spacing12,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
         ),
       );
 
-  ButtonStyle get retryButtonStyle => ElevatedButton.styleFrom(
-        backgroundColor: AppStyles.primaryColor,
+  ButtonStyle get secondaryButtonStyle => ElevatedButton.styleFrom(
+        backgroundColor: Colors.grey[300],
+        foregroundColor: AppStyles.textPrimaryColor,
         padding: EdgeInsets.symmetric(
           horizontal: AppStyles.spacing24,
           vertical: AppStyles.spacing12,
