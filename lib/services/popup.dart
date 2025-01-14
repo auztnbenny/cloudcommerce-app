@@ -1,14 +1,19 @@
+// order_details_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
-import 'package:intl/intl.dart';
 
 class OrderDetailsService {
   static const String baseUrl =
       'http://nwbo1.jubilyhrm.in/api/WebServiceBtoBOrders.aspx';
 
-  String _formatDateForApi(DateTime date) {
-    return DateFormat('dd-MM-yyyy').format(date);
+  String _cleanJsonString(String rawResponse) {
+    final trimmed = rawResponse.trim();
+    final endIndex = trimmed.indexOf('||JasonEnd');
+    if (endIndex == -1) {
+      throw Exception('Invalid response format: Missing JasonEnd marker');
+    }
+    return trimmed.substring(0, endIndex).trim();
   }
 
   Future<Map<String, dynamic>> fetchItemMaster({
@@ -16,6 +21,19 @@ class OrderDetailsService {
     required String partyCode,
   }) async {
     try {
+      // Validate input parameters
+      if (itemCode.isEmpty) {
+        throw Exception('Item code cannot be empty');
+      }
+      if (partyCode.isEmpty) {
+        throw Exception('Party code cannot be empty');
+      }
+
+      developer.log(
+        'Fetching item details for ItemCode: $itemCode, PartyCode: $partyCode',
+        name: 'OrderDetailsService',
+      );
+
       final response = await http.post(
         Uri.parse(baseUrl),
         body: {
@@ -27,12 +45,21 @@ class OrderDetailsService {
         },
       );
 
+      developer.log(
+        'Response status: ${response.statusCode}',
+        name: 'OrderDetailsService',
+      );
+
       if (response.statusCode != 200) {
         throw Exception('Server returned status code: ${response.statusCode}');
       }
 
-      final responseBody = response.body;
-      final jsonStr = responseBody.split('||JasonEnd')[0].trim();
+      final jsonStr = _cleanJsonString(response.body);
+      developer.log(
+        'Cleaned JSON: $jsonStr',
+        name: 'OrderDetailsService',
+      );
+
       final List<dynamic> jsonResponse = json.decode(jsonStr);
 
       if (jsonResponse.isEmpty) {
@@ -44,94 +71,129 @@ class OrderDetailsService {
         throw Exception(data['ErrorMessage'] ?? 'Failed to fetch item details');
       }
 
-      final itemDetails = json.decode(data['JSONData1'])[0];
-      return itemDetails;
-    } catch (e, stackTrace) {
+      // Parse item details
+      final itemDetails = _parseItemDetails(data['JSONData1']);
+
+      return {
+        'itemDetails': itemDetails,
+        'stockDetails': await getStockStatus(itemCode),
+      };
+    } catch (e) {
       developer.log(
-        'Error in fetchItemMaster',
-        error: e,
-        stackTrace: stackTrace,
+        'Error in fetchItemMaster: $e',
         name: 'OrderDetailsService',
       );
       rethrow;
     }
   }
 
-  Future<Map<String, dynamic>> fetchOrderDetails({
-    required String orderId,
-    required String userName,
-    DateTime? orderDate,
-  }) async {
+  Map<String, dynamic> _parseItemDetails(String? jsonData) {
+    if (jsonData == null || jsonData.isEmpty) {
+      throw Exception('No item details found');
+    }
+
     try {
-      final formattedDate = _formatDateForApi(orderDate ?? DateTime.now());
-
-      final response = await http.post(
-        Uri.parse(baseUrl),
-        body: {
-          'title': 'GetOrderDetailsByCode',
-          'description': 'Request For Stock of the day',
-          'ReqOrderID': orderId,
-          'ReqUserName': userName,
-          'ReqOrderDate': formattedDate,
-        },
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception('Server returned status code: ${response.statusCode}');
+      final List<dynamic> parsed = json.decode(jsonData);
+      if (parsed.isEmpty) {
+        throw Exception('Empty item details');
       }
 
-      final responseBody = response.body;
-      final jsonStr = responseBody.split('||JasonEnd')[0].trim();
-      final List<dynamic> jsonResponse = json.decode(jsonStr);
-
-      if (jsonResponse.isEmpty) {
-        throw Exception('Empty response from server');
-      }
-
-      final data = jsonResponse[0];
-      final int actionType = data['ActionType'] ?? -1;
-
-      if (actionType > 0) {
-        Map<String, dynamic> result = {
-          'orderMaster': null,
-          'orderDetails': <dynamic>[],
-          'blankProduct': null
-        };
-
-        if (data['JSONData1'] != null && data['JSONData1'] is String) {
-          final masterData = json.decode(data['JSONData1']);
-          if (masterData is List && masterData.isNotEmpty) {
-            result['orderMaster'] = masterData[0];
-          }
-        }
-
-        if (data['JSONData2'] != null && data['JSONData2'] is String) {
-          final detailsData = json.decode(data['JSONData2']);
-          if (detailsData is List) {
-            result['orderDetails'] = detailsData;
-          }
-        }
-
-        if (data['JSONData3'] != null && data['JSONData3'] is String) {
-          final templateData = json.decode(data['JSONData3']);
-          if (templateData is List && templateData.isNotEmpty) {
-            result['blankProduct'] = templateData[0];
-          }
-        }
-
-        return result;
-      } else {
-        throw Exception(
-            data['ErrorMessage'] ?? 'Failed to fetch order details');
-      }
-    } catch (e, stackTrace) {
+      final details = parsed[0];
+      return {
+        'SalePrice':
+            double.tryParse(details['SalePrice']?.toString() ?? '0') ?? 0.0,
+        'STKSVRSTOCK':
+            double.tryParse(details['STKSVRSTOCK']?.toString() ?? '0') ?? 0.0,
+        'STOCKCOLOR': details['STOCKCOLOR'] ?? '',
+        'itm_NAM': details['itm_NAM'] ?? '',
+        'MRP': double.tryParse(details['MRP']?.toString() ?? '0') ?? 0.0,
+        'LastRate':
+            double.tryParse(details['LastRate']?.toString() ?? '0') ?? 0.0,
+        'WSPrice':
+            double.tryParse(details['WSPrice']?.toString() ?? '0') ?? 0.0,
+        'SVRSTKID': details['SVRSTKID']?.toString() ?? '',
+        'STKGSTRate':
+            double.tryParse(details['STKGSTRate']?.toString() ?? '0') ?? 0.0,
+        'STKCGSTRate':
+            double.tryParse(details['STKCGSTRate']?.toString() ?? '0') ?? 0.0,
+        'STKSGSTRate':
+            double.tryParse(details['STKSGSTRate']?.toString() ?? '0') ?? 0.0,
+        'STKIGSTRate':
+            double.tryParse(details['STKIGSTRate']?.toString() ?? '0') ?? 0.0,
+        'OrderCesPer':
+            double.tryParse(details['OrderCesPer']?.toString() ?? '0') ?? 0.0,
+      };
+    } catch (e) {
       developer.log(
-        'Error in fetchOrderDetails',
-        error: e,
-        stackTrace: stackTrace,
+        'Error parsing item details: $e',
         name: 'OrderDetailsService',
       );
       rethrow;
     }
+  }
+
+  Future<Map<String, dynamic>> getStockStatus(String itemId) async {
+    if (itemId.isEmpty) {
+      return _getDefaultStockStatus();
+    }
+
+    try {
+      developer.log(
+        'Fetching stock status for ItemId: $itemId',
+        name: 'OrderDetailsService',
+      );
+
+      final response = await http.post(
+        Uri.parse(baseUrl),
+        body: {
+          'title': 'getStockNOrderStatus',
+          'description': 'Request For Stock Status',
+          'ReqItemCode': itemId,
+        },
+      );
+
+      if (response.statusCode != 200) {
+        return _getDefaultStockStatus();
+      }
+
+      try {
+        final jsonStr = _cleanJsonString(response.body);
+        final List<dynamic> jsonResponse = json.decode(jsonStr);
+
+        if (jsonResponse.isEmpty ||
+            jsonResponse[0]['JSONData1'] == null ||
+            jsonResponse[0]['JSONData1'].toString().isEmpty) {
+          return _getDefaultStockStatus();
+        }
+
+        final stockData = json.decode(jsonResponse[0]['JSONData1'])[0];
+        return {
+          'finalStock':
+              double.tryParse(stockData['FinalStock']?.toString() ?? '0') ??
+                  0.0,
+          'orderStock':
+              double.tryParse(stockData['OrderQty']?.toString() ?? '0') ?? 0.0,
+        };
+      } catch (e) {
+        developer.log(
+          'Error parsing stock status: $e',
+          name: 'OrderDetailsService',
+        );
+        return _getDefaultStockStatus();
+      }
+    } catch (e) {
+      developer.log(
+        'Error in getStockStatus: $e',
+        name: 'OrderDetailsService',
+      );
+      return _getDefaultStockStatus();
+    }
+  }
+
+  Map<String, dynamic> _getDefaultStockStatus() {
+    return {
+      'finalStock': 0.0,
+      'orderStock': 0.0,
+    };
   }
 }

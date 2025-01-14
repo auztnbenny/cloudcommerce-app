@@ -283,9 +283,11 @@ class _ProductListingPageState extends State<ProductListingPage> {
       context: context,
       builder: (context) => OrderDetailsPage(
         itemCode: product['itm_COD']?.toString() ?? '',
-        partyCode: widget.orderId,
-        onDone: (Map<String, dynamic> updatedProduct) => 
-          _controller.handleCart(updatedProduct),
+        partyCode: widget.orderId,  // Fixed: using widget.orderId instead of orderId
+        orderDetails: product,
+        onDone: (updatedProduct) {
+          _controller.handleCart(updatedProduct);
+        },
       ),
     );
   }

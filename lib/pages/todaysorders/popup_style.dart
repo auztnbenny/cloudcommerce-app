@@ -1,41 +1,61 @@
+// order_details_style.dart
 import 'package:flutter/material.dart';
 import 'package:cloudcommerce/styles/app_styles.dart';
 
 class OrderDetailsStyle {
+  // Text Styles
   TextStyle get labelStyle => AppStyles.body2.copyWith(
         fontWeight: FontWeight.w600,
         color: AppStyles.textSecondaryColor,
       );
 
-  TextStyle get valueStyle => AppStyles.body1;
-
-  TextStyle get stockAvailableStyle => AppStyles.body2.copyWith(
-        color: Colors.green,
-        fontWeight: FontWeight.w500,
-      );
-
-  TextStyle get stockUnavailableStyle => AppStyles.body2.copyWith(
-        color: Colors.red,
-        fontWeight: FontWeight.w500,
-      );
-
-  TextStyle get inputLabelStyle => AppStyles.body1.copyWith(
-        fontWeight: FontWeight.w600,
+  TextStyle get valueStyle => AppStyles.body1.copyWith(
         color: AppStyles.textPrimaryColor,
       );
 
-  InputDecoration getInputDecoration({String? label, String? hint}) =>
+  TextStyle get stockStyle => AppStyles.body1.copyWith(
+        fontWeight: FontWeight.w500,
+      );
+
+  TextStyle get amountStyle => AppStyles.body1.copyWith(
+        color: AppStyles.primaryColor,
+        fontWeight: FontWeight.w600,
+      );
+
+  // Stock Color Styles
+  Color getStockColor(String stockColor) {
+    switch (stockColor.toUpperCase()) {
+      case 'GREEN':
+        return Colors.green;
+      case 'RED':
+        return Colors.red;
+      case 'YELLOW':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // Input Decoration
+  InputDecoration getInputDecoration({
+    String? label,
+    String? hint,
+    Widget? prefix,
+    Widget? suffix,
+  }) =>
       InputDecoration(
         labelText: label,
         hintText: hint,
+        prefixIcon: prefix,
+        suffixIcon: suffix,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
-          borderSide: BorderSide(color: AppStyles.secondaryColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
-          borderSide:
-              BorderSide(color: AppStyles.secondaryColor.withOpacity(0.5)),
+          borderSide: BorderSide(
+            color: AppStyles.secondaryColor.withOpacity(0.3),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
@@ -49,12 +69,22 @@ class OrderDetailsStyle {
         fillColor: Colors.white,
       );
 
-  ButtonStyle get expandMoreButtonStyle => ButtonStyle(
-        padding: MaterialStateProperty.all(EdgeInsets.zero),
-        minimumSize: MaterialStateProperty.all(Size(0, 0)),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  // Stock Info Container
+  BoxDecoration stockInfoDecoration(Color color) => BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
       );
 
+  // Expansion Panel
+  BoxDecoration expansionPanelDecoration = BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+    border: Border.all(
+      color: AppStyles.secondaryColor.withOpacity(0.2),
+    ),
+  );
+
+  // Buttons
   ButtonStyle get primaryButtonStyle => ElevatedButton.styleFrom(
         backgroundColor: AppStyles.primaryColor,
         padding: EdgeInsets.symmetric(
@@ -67,7 +97,7 @@ class OrderDetailsStyle {
       );
 
   ButtonStyle get secondaryButtonStyle => ElevatedButton.styleFrom(
-        backgroundColor: Colors.grey[300],
+        backgroundColor: Colors.grey[200],
         foregroundColor: AppStyles.textPrimaryColor,
         padding: EdgeInsets.symmetric(
           horizontal: AppStyles.spacing24,
