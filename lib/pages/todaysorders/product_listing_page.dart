@@ -351,15 +351,15 @@ class _ProductListingPageState extends State<ProductListingPage> {
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppStyles.radiusMedium),
         ),
-        child: Image.network(
-          _controller.getProductImageUrl(product),
+        child: FadeInImage(
+          placeholder: AssetImage('assets/images/mockup.jpg'),
+          image: NetworkImage(_controller.getProductImageUrl(product)),
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            print('Error loading image: $error');
-            return Container(
-              color: AppStyles.secondaryColor.withOpacity(0.1),
-              child: Icon(Icons.image_not_supported,
-                  color: AppStyles.secondaryColor),
+          imageErrorBuilder: (context, error, stackTrace) {
+            debugPrint('Error loading image: $error');
+            return Image.asset(
+              'assets/images/mockup.jpg',
+              fit: BoxFit.cover,
             );
           },
         ),
