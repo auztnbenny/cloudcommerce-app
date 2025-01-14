@@ -1,5 +1,5 @@
-import 'package:cloudcommerce/styles/app_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:cloudcommerce/styles/app_styles.dart';
 
 class ProductListingStyle {
   InputDecoration get searchInputDecoration => InputDecoration(
@@ -27,6 +27,21 @@ class ProductListingStyle {
         filled: true,
       );
 
+  BoxDecoration get filterOptionDecoration => BoxDecoration(
+        borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
+        border: Border.all(
+          color: AppStyles.secondaryColor.withOpacity(0.2),
+        ),
+      );
+
+  BoxDecoration get selectedFilterOptionDecoration => BoxDecoration(
+        color: AppStyles.primaryColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
+        border: Border.all(
+          color: AppStyles.primaryColor,
+        ),
+      );
+
   SliverGridDelegateWithFixedCrossAxisCount getGridDelegate(
       BoxConstraints constraints) {
     int crossAxisCount = 2;
@@ -40,7 +55,19 @@ class ProductListingStyle {
       crossAxisCount: crossAxisCount,
       crossAxisSpacing: AppStyles.spacing16,
       mainAxisSpacing: AppStyles.spacing16,
-      childAspectRatio: 0.7, // Changed from 0.75 to 0.7 to provide more height
+      childAspectRatio: 0.7,
     );
   }
+
+  ButtonStyle get filterDialogButtonStyle => ElevatedButton.styleFrom(
+        foregroundColor: Colors.white,
+        backgroundColor: AppStyles.primaryColor,
+        padding: EdgeInsets.symmetric(
+          horizontal: AppStyles.spacing24,
+          vertical: AppStyles.spacing12,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
+        ),
+      );
 }

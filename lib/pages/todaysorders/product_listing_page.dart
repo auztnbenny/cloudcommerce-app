@@ -1,5 +1,6 @@
 // product_listing_page.dart
 import 'package:cloudcommerce/pages/todaysorders/popup.dart';
+import 'package:cloudcommerce/pages/todaysorders/cart_page.dart'; // Add this import
 import 'package:cloudcommerce/services/product_listing.dart';
 import 'package:cloudcommerce/styles/app_styles.dart';
 import 'package:flutter/material.dart';
@@ -22,11 +23,23 @@ class ProductListingPage extends StatefulWidget {
 class _ProductListingPageState extends State<ProductListingPage> {
   final ProductListingController _controller = ProductListingController();
   final ProductListingStyle _style = ProductListingStyle();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _initializeData();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    _controller.filterProducts(_searchController.text);
   }
 
   Future<void> _initializeData() async {
@@ -35,6 +48,58 @@ class _ProductListingPageState extends State<ProductListingPage> {
     } catch (e) {
       print('Error initializing product listing: $e');
     }
+  }
+
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+          ),
+          child: Container(
+            padding: EdgeInsets.all(AppStyles.spacing16),
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+              maxWidth: 400,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Filter by Group', style: AppStyles.h2),
+                    IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                SizedBox(height: AppStyles.spacing16),
+                Expanded(
+                  child: AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, _) {
+                      return ListView(
+                        children: [
+                          _buildFilterOption('All Groups', ''),
+                          ..._controller.groups
+                              .map((group) => _buildFilterOption(group, group))
+                              .toList(),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -55,6 +120,51 @@ class _ProductListingPageState extends State<ProductListingPage> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildFilterOption(String label, String value) {
+    final isSelected = _controller.selectedGroup == value;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: AppStyles.spacing8),
+      child: Material(
+        color: isSelected
+            ? AppStyles.primaryColor.withOpacity(0.1)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
+          onTap: () {
+            _controller.selectedGroup = value;
+            _controller.filterProducts(_searchController.text);
+            Navigator.pop(context);
+          },
+          child: Padding(
+            padding: EdgeInsets.all(AppStyles.spacing12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    style: AppStyles.body1.copyWith(
+                      color: isSelected
+                          ? AppStyles.primaryColor
+                          : AppStyles.textPrimaryColor,
+                    ),
+                  ),
+                ),
+                if (isSelected)
+                  Icon(
+                    Icons.check,
+                    color: AppStyles.primaryColor,
+                    size: 20,
+                  ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -82,7 +192,17 @@ class _ProductListingPageState extends State<ProductListingPage> {
             IconButton(
               icon: Icon(Icons.shopping_cart,
                   color: const Color.fromARGB(255, 255, 254, 254)),
-              onPressed: _controller.navigateToCart,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CartPage(
+                        // orderId: widget.orderId,
+                        // userName: widget.userName,
+                        ),
+                  ),
+                );
+              },
             ),
             if (_controller.cartCount > 0)
               Positioned(
@@ -115,14 +235,14 @@ class _ProductListingPageState extends State<ProductListingPage> {
         children: [
           Expanded(
             child: TextField(
-              onChanged: _controller.filterProducts,
+              controller: _searchController,
               decoration: _style.searchInputDecoration,
               style: AppStyles.body1,
             ),
           ),
           IconButton(
             icon: Icon(Icons.filter_list),
-            onPressed: () => _controller.showGroupFilterDialog(context),
+            onPressed: _showFilterDialog,
             color: _controller.hasActiveFilter
                 ? AppStyles.primaryColor
                 : AppStyles.secondaryColor,
@@ -283,7 +403,8 @@ class _ProductListingPageState extends State<ProductListingPage> {
       context: context,
       builder: (context) => OrderDetailsPage(
         itemCode: product['itm_COD']?.toString() ?? '',
-        partyCode: widget.orderId,  // Fixed: using widget.orderId instead of orderId
+        partyCode:
+            widget.orderId, // Fixed: using widget.orderId instead of orderId
         orderDetails: product,
         onDone: (updatedProduct) {
           _controller.handleCart(updatedProduct);

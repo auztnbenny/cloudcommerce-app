@@ -240,7 +240,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       _productDetails['FreeQty'] = freeQty;
       _productDetails['Disper'] = discount;
 
-      // Calculate Sale Rate
+      // Calculate Sale Rate (with proper type conversion)
       final orderRate =
           double.tryParse(_productDetails['OrderRate']?.toString() ?? '0') ??
               0.0;
@@ -251,28 +251,38 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           double.tryParse(_productDetails['TrnCessPer']?.toString() ?? '0') ??
               0.0;
 
+      // Ensure we don't divide by zero
+      final divisor = trnGstPer + trnCessPer + 100;
       _productDetails['SaleRate'] =
-          (orderRate * 100) / (trnGstPer + trnCessPer + 100);
+          divisor > 0 ? (orderRate * 100) / divisor : orderRate;
 
       // Calculate amounts
       _productDetails['OrderAmount'] = orderRate * orderQty;
-      _productDetails['TrnAmount'] = _productDetails['SaleRate'] * orderQty;
+      _productDetails['TrnAmount'] =
+          (_productDetails['SaleRate'] ?? 0.0) * orderQty;
 
       // Calculate discounts
       _productDetails['ItemDisAmount'] =
-          (_productDetails['OrderAmount'] * discount) / 100;
-      _productDetails['TrnGrossAmt'] =
-          _productDetails['TrnAmount'] - _productDetails['ItemDisAmount'];
+          (_productDetails['OrderAmount'] ?? 0.0) * discount / 100;
+      _productDetails['TrnGrossAmt'] = (_productDetails['TrnAmount'] ?? 0.0) -
+          (_productDetails['ItemDisAmount'] ?? 0.0);
 
-      final trnGrossAmt = _productDetails['TrnGrossAmt'];
+      final trnGrossAmt = _productDetails['TrnGrossAmt'] ?? 0.0;
 
       // Calculate GST amounts
-      _productDetails['TrnCGSTAmt'] = trnGrossAmt * (trnGstPer / 100);
-      _productDetails['TrnSGSTAmt'] = trnGrossAmt * (trnGstPer / 100);
-      _productDetails['TrnGSTAmt'] =
-          _productDetails['TrnCGSTAmt'] + _productDetails['TrnSGSTAmt'];
+      final trncGstPer =
+          double.tryParse(_productDetails['TrnCGSTPer']?.toString() ?? '0') ??
+              0.0;
+      final trnsGstPer =
+          double.tryParse(_productDetails['TrnSGSTPer']?.toString() ?? '0') ??
+              0.0;
+
+      _productDetails['TrnCGSTAmt'] = trnGrossAmt * (trncGstPer / 100);
+      _productDetails['TrnSGSTAmt'] = trnGrossAmt * (trnsGstPer / 100);
+      _productDetails['TrnGSTAmt'] = (_productDetails['TrnCGSTAmt'] ?? 0.0) +
+          (_productDetails['TrnSGSTAmt'] ?? 0.0);
       _productDetails['TrnNetAmount'] =
-          trnGrossAmt + _productDetails['TrnGSTAmt'];
+          trnGrossAmt + (_productDetails['TrnGSTAmt'] ?? 0.0);
       _productDetails['TrnCessAmt'] = trnGrossAmt * (trnCessPer / 100);
       _productDetails['TotQty'] = orderQty + freeQty;
     });
