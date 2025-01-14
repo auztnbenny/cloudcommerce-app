@@ -129,8 +129,8 @@ class AppStyles {
   static final BoxDecoration appBarDecoration = BoxDecoration(
     color: primaryColor,
     borderRadius: const BorderRadius.only(
-      bottomLeft: Radius.circular(15),
-      bottomRight: Radius.circular(15),
+      bottomLeft: Radius.circular(1),
+      bottomRight: Radius.circular(1),
     ),
     boxShadow: [
       BoxShadow(

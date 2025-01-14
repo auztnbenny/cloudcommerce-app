@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class CartPage extends StatelessWidget {
   CartPage({Key? key}) : super(key: key);
 
-  // Sample data for demonstration
+  // Sample data remains the same...
   final List<CartItem> items = [
     CartItem(
       name: 'Anti Hair Loss Shampoo',
@@ -30,21 +30,29 @@ class CartPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
+      backgroundColor: AppStyles.backgroundColor,
+      appBar: _buildAppBar(context),
       body: _buildBody(),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
+      toolbarHeight: AppStyles.appBarHeight,
+      backgroundColor: Colors.transparent,
       elevation: 0,
-      leading: BackButton(color: Colors.black),
-      title: Text(
-        'My Cart',
-        style: AppStyles.h2.copyWith(color: Colors.black),
+      flexibleSpace: Container(
+        decoration: AppStyles.appBarDecoration,
       ),
+      // leading: IconButton(
+      //   icon: Icon(Icons.arrow_back, color: Colors.white),
+      //   onPressed: () => Navigator.of(context).pop(),
+      // ),
+      title: Text(
+        'Shopping Cart',
+        style: AppStyles.appBarTitleStyle,
+      ),
+      centerTitle: true,
     );
   }
 

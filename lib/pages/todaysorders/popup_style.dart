@@ -87,6 +87,7 @@ class OrderDetailsStyle {
   // Buttons
   ButtonStyle get primaryButtonStyle => ElevatedButton.styleFrom(
         backgroundColor: AppStyles.primaryColor,
+        foregroundColor: const Color.fromARGB(255, 252, 98, 98),
         padding: EdgeInsets.symmetric(
           horizontal: AppStyles.spacing24,
           vertical: AppStyles.spacing12,
