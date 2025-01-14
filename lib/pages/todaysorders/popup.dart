@@ -37,7 +37,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
   Map<String, dynamic> _productDetails = {};
   Map<String, dynamic> _stockStatus = {
-    'finalStock': 0,
+    'FinalStock': 0,
     'orderStock': 0,
   };
   bool _isLoading = true;
@@ -57,20 +57,21 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
   void _initializeFromExistingProduct() {
     setState(() {
       _productDetails = {
-        'OrderRate': widget.orderDetails?['OrderRate'] ?? 0.0,
+        'OrderRate': widget.orderDetails?['SalePrice'] ??
+            0.0, // Changed from OrderRate to SalePrice
         'STKSVRSTOCK': widget.orderDetails?['STKSVRSTOCK'] ?? 0.0,
         'STOCKCOLOR': widget.orderDetails?['STOCKCOLOR'] ?? '',
         'itm_NAM': widget.orderDetails?['itm_NAM'] ?? '',
-        'STOCKMRP': widget.orderDetails?['STOCKMRP'] ?? 0.0,
+        'MRP': widget.orderDetails?['MRP'] ?? 0.0,
         'STOCKLastRate': widget.orderDetails?['STOCKLastRate'] ?? 0.0,
-        'STOCKSalePrice': widget.orderDetails?['STOCKSalePrice'] ?? 0.0,
-        'STOCKWSPrice': widget.orderDetails?['STOCKWSPrice'] ?? 0.0,
+        'SalePrice': widget.orderDetails?['SalePrice'] ?? 0.0,
+        'WSPrice': widget.orderDetails?['WSPrice'] ?? 0.0,
         'SVRSTKID': widget.orderDetails?['SVRSTKID']?.toString() ?? '',
-        'TrnCGSTPer': widget.orderDetails?['TrnCGSTPer'] ?? 0.0,
-        'TrnIGSTPer': widget.orderDetails?['TrnIGSTPer'] ?? 0.0,
-        'TrnSGSTPer': widget.orderDetails?['TrnSGSTPer'] ?? 0.0,
-        'TrnGSTPer': widget.orderDetails?['TrnGSTPer'] ?? 0.0,
-        'TrnCessPer': widget.orderDetails?['TrnCessPer'] ?? 0.0,
+        'TrnCGSTPer': widget.orderDetails?['STKCGSTRate'] ?? 0.0,
+        'TrnIGSTPer': widget.orderDetails?['STKIGSTRate'] ?? 0.0,
+        'TrnSGSTPer': widget.orderDetails?['STKSGSTRate'] ?? 0.0,
+        'TrnGSTPer': widget.orderDetails?['STKGSTRate'] ?? 0.0,
+        'TrnCessPer': widget.orderDetails?['OrderCesPer'] ?? 0.0,
         'SaleRate': widget.orderDetails?['SaleRate'] ?? 0.0,
         'OrderQty': widget.orderDetails?['OrderQty'] ?? 0.0,
         'FreeQty': widget.orderDetails?['FreeQty'] ?? 0.0,
@@ -185,19 +186,21 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
   Map<String, dynamic> _initializeProductDetails(
       Map<String, dynamic> response) {
-    final orderRate = response['SalePrice'] ?? 0.0;
+    final orderRate =
+        response['SalePrice'] ?? 0.0; // This is correct, keep using SalePrice
     final gstRate = response['STKGSTRate'] ?? 0.0;
     final cessPer = response['OrderCesPer'] ?? 0.0;
 
     return {
-      'OrderRate': orderRate,
-      'STKSVRSTOCK': response['STKSVRSTOCK'] ?? 0.0,
+      'OrderRate':
+          orderRate, // This is already using SalePrice through orderRate
+      'FinalStock': response['FinalStock'] ?? 0.0,
       'STOCKCOLOR': response['STOCKCOLOR'] ?? '',
       'itm_NAM': response['itm_NAM'] ?? '',
-      'STOCKMRP': response['MRP'] ?? 0.0,
+      'MRP': response['MRP'] ?? 0.0,
       'STOCKLastRate': response['LastRate'] ?? 0.0,
-      'STOCKSalePrice': response['SalePrice'] ?? 0.0,
-      'STOCKWSPrice': response['WSPrice'] ?? 0.0,
+      'SalePrice': response['SalePrice'] ?? 0.0,
+      'WSPrice': response['WSPrice'] ?? 0.0,
       'SVRSTKID': response['SVRSTKID'] ?? '',
       'TrnCGSTPer': response['STKCGSTRate'] ?? 0.0,
       'TrnIGSTPer': response['STKIGSTRate'] ?? 0.0,
@@ -238,12 +241,18 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       _productDetails['Disper'] = discount;
 
       // Calculate Sale Rate
-      final orderRate = _productDetails['OrderRate'] ?? 0.0;
-      final trnGstPer = _productDetails['TrnGSTPer'] ?? 0.0;
-      final trnCessPer = _productDetails['TrnCessPer'] ?? 0.0;
+      final orderRate =
+          double.tryParse(_productDetails['OrderRate']?.toString() ?? '0') ??
+              0.0;
+      final trnGstPer =
+          double.tryParse(_productDetails['TrnGSTPer']?.toString() ?? '0') ??
+              0.0;
+      final trnCessPer =
+          double.tryParse(_productDetails['TrnCessPer']?.toString() ?? '0') ??
+              0.0;
 
       _productDetails['SaleRate'] =
-          (orderRate / (trnGstPer + trnCessPer + 100)) * 100;
+          (orderRate * 100) / (trnGstPer + trnCessPer + 100);
 
       // Calculate amounts
       _productDetails['OrderAmount'] = orderRate * orderQty;
@@ -258,10 +267,8 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       final trnGrossAmt = _productDetails['TrnGrossAmt'];
 
       // Calculate GST amounts
-      _productDetails['TrnCGSTAmt'] =
-          trnGrossAmt * (_productDetails['TrnCGSTPer'] / 100);
-      _productDetails['TrnSGSTAmt'] =
-          trnGrossAmt * (_productDetails['TrnSGSTPer'] / 100);
+      _productDetails['TrnCGSTAmt'] = trnGrossAmt * (trnGstPer / 100);
+      _productDetails['TrnSGSTAmt'] = trnGrossAmt * (trnGstPer / 100);
       _productDetails['TrnGSTAmt'] =
           _productDetails['TrnCGSTAmt'] + _productDetails['TrnSGSTAmt'];
       _productDetails['TrnNetAmount'] =
@@ -319,9 +326,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
   Widget _buildHeader() {
     final rates = [
-      'SP: ${_productDetails['STOCKSalePrice']}',
-      'WSP: ${_productDetails['STOCKWSPrice']}',
-      'MRP: ${_productDetails['STOCKMRP']}',
+      'SP: ${_productDetails['SalePrice']}',
+      'WSP: ${_productDetails['WSPrice']}',
+      'MRP: ${_productDetails['MRP']}',
     ];
     if (_productDetails['STOCKLastRate'] != null &&
         _productDetails['STOCKLastRate'] > 0) {
@@ -382,7 +389,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       children: [
         _buildStockInfoItem(
           'Stk Avl:',
-          '${_stockStatus['finalStock']}',
+          '${_stockStatus['FinalStock']}',
           stockColor,
         ),
         SizedBox(width: AppStyles.spacing8),
@@ -429,6 +436,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           controller: _orderQtyController,
           keyboardType: TextInputType.number,
           decoration: _style.getInputDecoration(),
+          onChanged: (value) {
+            _handleCalculations();
+          },
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Please enter quantity';
@@ -450,15 +460,12 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildInputField(
+        _buildReadOnlyField(
           'Rate',
-          _productDetails['OrderRate']?.toString() ?? '0',
-          onChanged: (value) {
-            setState(() {
-              _productDetails['OrderRate'] = double.tryParse(value) ?? 0;
-              _handleCalculations();
-            });
-          },
+          _productDetails['SalePrice']?.toString() ?? '0',
+          // onChanged: (value) {
+          //   _productDetails['SalePrice'] = double.tryParse(value) ?? 0;
+          // },
         ),
         SizedBox(height: AppStyles.spacing12),
         _buildReadOnlyField(

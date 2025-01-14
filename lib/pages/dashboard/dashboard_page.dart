@@ -7,7 +7,12 @@ import '../../widgets/custom_bottom_nav.dart';
 import 'dashboard_styles.dart';
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({Key? key}) : super(key: key);
+  final String username;
+
+  const DashboardPage({
+    Key? key,
+    required this.username,
+  }) : super(key: key);
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -250,7 +255,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 SizedBox(height: AppStyles.spacing4),
                 Text(
-                  'Last Update 25 Feb 2024',
+                  'Welcome, ${widget.username}',
                   style: AppStyles.body2.copyWith(
                     color: Colors.white.withOpacity(0.8),
                     fontSize: AppStyles.getResponsiveFontSize(context, 14),

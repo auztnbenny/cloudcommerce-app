@@ -107,7 +107,7 @@ class NewOrderService {
     }
   }
 
-  Future<void> submitOrder({
+  Future<String> submitOrder({
     required String partyId,
     required String remarks,
     required String deliveryDate,
@@ -134,9 +134,6 @@ class NewOrderService {
         "Remarks": remarks
       };
 
-      print('Debug: Location data being sent:');
-      print(json.encode(locationData));
-
       final requestBody = {
         'title': 'UpdateOrderMaster',
         'description': '',
@@ -152,36 +149,50 @@ class NewOrderService {
         'ReqLocJason': json.encode([locationData]),
       };
 
-      print('Debug: Full request body:');
-      print(json.encode(requestBody));
-
       final response = await http.post(
         Uri.parse(baseUrl),
         body: requestBody,
       );
 
-      print('Debug: Response status code: ${response.statusCode}');
-      print('Debug: Response body: ${response.body}');
-
       if (response.statusCode == 200) {
         String responseBody = response.body.split('||').first.trim();
         final jsonResponse = json.decode(responseBody);
-        print('Debug: Parsed response: $jsonResponse');
 
         if (jsonResponse is List && jsonResponse.isNotEmpty) {
           final firstItem = jsonResponse[0];
           if (firstItem['RcdID'] == -2) {
             throw Exception(firstItem['ItemName'] ?? 'Unknown error occurred');
           }
+
+          // Extract OrderID from the response
+          final orderDetails = jsonResponse.firstWhere(
+            (item) =>
+                item['ItemKeyName']?.toString().contains('OrderID') == true,
+            orElse: () => {},
+          );
+
+          if (orderDetails['ItemKeyName'] != null) {
+            try {
+              final orderJson = json.decode(orderDetails['ItemKeyName']);
+              if (orderJson is List && orderJson.isNotEmpty) {
+                final orderId = orderJson[0]['OrderID']?.toString();
+                if (orderId != null && orderId.isNotEmpty) {
+                  return orderId;
+                }
+              }
+            } catch (e) {
+              print('Error parsing order details: $e');
+            }
+          }
+          throw Exception('Could not extract order ID from response');
         }
+        throw Exception('Invalid response format');
       } else {
         throw Exception('Server error: ${response.statusCode}');
       }
-    } catch (e, stackTrace) {
-      print('Debug: Error in submitOrder:');
-      print('Error: $e');
-      print('Stack trace: $stackTrace');
-      throw Exception('Error submitting order: $e');
+    } catch (e) {
+      print('Error in submitOrder: $e');
+      rethrow;
     }
   }
 }

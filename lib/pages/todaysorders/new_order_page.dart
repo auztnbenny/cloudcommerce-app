@@ -4,6 +4,7 @@ import 'package:cloudcommerce/services/new_order_service.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'package:cloudcommerce/pages/todaysorders/product_listing_page.dart'; // Add this import
 
 class NewOrderPage extends StatefulWidget {
   const NewOrderPage({Key? key}) : super(key: key);
@@ -124,10 +125,11 @@ class _NewOrderPageState extends State<NewOrderPage> {
       print('PartyID: $_selectedPartyId');
       print('Remarks: ${_remarksController.text}');
       print('Delivery Date: ${_deliveryDateController.text}');
-      print('Position: ${_currentPosition?.latitude},${_currentPosition?.longitude}');
+      print(
+          'Position: ${_currentPosition?.latitude},${_currentPosition?.longitude}');
       print('Location Details: $_locationDetails');
 
-      await _newOrderService.submitOrder(
+      final orderId = await _newOrderService.submitOrder(
         partyId: _selectedPartyId,
         remarks: _remarksController.text,
         deliveryDate: _deliveryDateController.text,
@@ -137,14 +139,26 @@ class _NewOrderPageState extends State<NewOrderPage> {
 
       if (!mounted) return;
       _showSuccess('Order created successfully');
-      Navigator.pop(context);
-    } catch (e, stackTrace) {
-      print('Debug: Error submitting order:');
-      print('Error: $e');
-      print('Stack trace: $stackTrace');
-      _showError(e.toString().replaceAll('Exception: ', ''));
+
+      // Replace the pop with navigation to ProductListingPage
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProductListingPage(
+            orderId: orderId,
+            userName: 'sadmin', // Add required userName parameter
+          ),
+        ),
+        (route) => false, // Remove all previous routes
+      );
+    } catch (e) {
+      if (mounted) {
+        _showError(e.toString().replaceAll('Exception: ', ''));
+      }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

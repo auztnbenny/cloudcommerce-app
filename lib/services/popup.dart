@@ -168,7 +168,7 @@ class OrderDetailsService {
 
         final stockData = json.decode(jsonResponse[0]['JSONData1'])[0];
         return {
-          'finalStock':
+          'FinalStock':
               double.tryParse(stockData['FinalStock']?.toString() ?? '0') ??
                   0.0,
           'orderStock':
@@ -192,7 +192,7 @@ class OrderDetailsService {
 
   Map<String, dynamic> _getDefaultStockStatus() {
     return {
-      'finalStock': 0.0,
+      'FinalStock': 0.0,
       'orderStock': 0.0,
     };
   }

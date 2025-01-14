@@ -70,7 +70,11 @@ class _LoginPageState extends State<LoginPage> {
       if (response.success && response.data?['ActionType'] == 0) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => DashboardPage()),
+          MaterialPageRoute(
+            builder: (context) => DashboardPage(
+              username: _usernameController.text.trim(),
+            ),
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
