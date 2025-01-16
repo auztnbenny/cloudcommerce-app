@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
 
 class OrderDetailsService {
+  static const String baseUrl1 =
+      'http://nwbo1.jubilyhrm.in/WebDataProcessingReact.aspx';
   static const String baseUrl =
       'http://nwbo1.jubilyhrm.in/api/WebServiceBtoBOrders.aspx';
 
@@ -132,60 +134,85 @@ class OrderDetailsService {
     }
   }
 
-  Future<Map<String, dynamic>> getStockStatus(String itemId) async {
-    if (itemId.isEmpty) {
+  Future<Map<String, dynamic>> getStockStatus(String svrStkId) async {
+    if (svrStkId.isEmpty) {
       return _getDefaultStockStatus();
     }
 
+    // Update to use the same URL as React
+
     try {
       developer.log(
-        'Fetching stock status for ItemId: $itemId',
+        'Fetching stock status for SVRSTKID: $svrStkId',
+        name: 'OrderDetailsService',
+      );
+
+      // Create FormData similar to React implementation
+      var formData = {
+        'title': 'GetStockNOrderStatus',
+        'description': 'Request For Stock of the day',
+        'ReqSvrStkID': svrStkId,
+      };
+
+      developer.log(
+        'Request Data: $formData',
         name: 'OrderDetailsService',
       );
 
       final response = await http.post(
-        Uri.parse(baseUrl),
-        body: {
-          'title': 'getStockNOrderStatus',
-          'description': 'Request For Stock Status',
-          'ReqItemCode': itemId,
+        Uri.parse(baseUrl1),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
+        body: formData,
       );
+
+      developer.log('Response Status: ${response.statusCode}',
+          name: 'OrderDetailsService');
 
       if (response.statusCode != 200) {
         return _getDefaultStockStatus();
       }
 
       try {
-        final jsonStr = _cleanJsonString(response.body);
-        final List<dynamic> jsonResponse = json.decode(jsonStr);
-
-        if (jsonResponse.isEmpty ||
-            jsonResponse[0]['JSONData1'] == null ||
-            jsonResponse[0]['JSONData1'].toString().isEmpty) {
+        // Match React's response handling
+        final responseData = response.body;
+        final jsonEndIndex = responseData.indexOf('||JasonEnd');
+        if (jsonEndIndex == -1) {
+          developer.log('No JasonEnd marker found in response');
           return _getDefaultStockStatus();
         }
 
-        final stockData = json.decode(jsonResponse[0]['JSONData1'])[0];
-        return {
-          'FinalStock':
-              double.tryParse(stockData['FinalStock']?.toString() ?? '0') ??
-                  0.0,
-          'orderStock':
-              double.tryParse(stockData['OrderQty']?.toString() ?? '0') ?? 0.0,
-        };
+        final jsonStr = responseData.substring(0, jsonEndIndex);
+        developer.log('Extracted JSON string: $jsonStr');
+
+        final jsonData = json.decode(jsonStr);
+        developer.log('Parsed JSON data: $jsonData');
+
+        // Extract stock data from response
+        if (jsonData is List &&
+            jsonData.isNotEmpty &&
+            jsonData[0]['JSONData1'] != null) {
+          final stockData = json.decode(jsonData[0]['JSONData1'])[0];
+          return {
+            'FinalStock':
+                double.tryParse(stockData['FinalStock']?.toString() ?? '0') ??
+                    0.0,
+            'OrderQty':
+                double.tryParse(stockData['OrderQty']?.toString() ?? '0') ??
+                    0.0,
+          };
+        }
+
+        return _getDefaultStockStatus();
       } catch (e) {
         developer.log(
-          'Error parsing stock status: $e',
-          name: 'OrderDetailsService',
-        );
+            'Error parsing response: $e\nResponse body: ${response.body}',
+            name: 'OrderDetailsService');
         return _getDefaultStockStatus();
       }
     } catch (e) {
-      developer.log(
-        'Error in getStockStatus: $e',
-        name: 'OrderDetailsService',
-      );
+      developer.log('Network error: $e', name: 'OrderDetailsService');
       return _getDefaultStockStatus();
     }
   }
@@ -193,7 +220,7 @@ class OrderDetailsService {
   Map<String, dynamic> _getDefaultStockStatus() {
     return {
       'FinalStock': 0.0,
-      'orderStock': 0.0,
+      'OrderQty': 0.0,
     };
   }
 }

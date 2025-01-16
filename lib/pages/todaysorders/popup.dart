@@ -37,8 +37,8 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
   Map<String, dynamic> _productDetails = {};
   Map<String, dynamic> _stockStatus = {
-    'FinalStock': 0,
-    'orderStock': 0,
+    'FinalStock': 0.0,
+    'OrderQty': 0.0, // This matches the key from service now
   };
   bool _isLoading = true;
   String? _error;
@@ -106,7 +106,27 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
   Future<void> _updateStockStatus() async {
     try {
-      final stockStatus = await _service.getStockStatus(widget.itemCode);
+      final svrStkId = _productDetails['SVRSTKID']?.toString() ?? '';
+
+      developer.log(
+        'Updating stock status with SVRSTKID: $svrStkId',
+        name: 'OrderDetailsPage',
+      );
+
+      if (svrStkId.isEmpty) {
+        developer.log(
+          'Empty SVRSTKID, skipping stock status update',
+          name: 'OrderDetailsPage',
+        );
+        return;
+      }
+
+      final stockStatus = await _service.getStockStatus(svrStkId);
+      developer.log(
+        'Stock Status Update: $stockStatus',
+        name: 'OrderDetailsPage',
+      );
+
       if (mounted) {
         setState(() {
           _stockStatus = stockStatus;
@@ -117,7 +137,6 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         'Error updating stock status: $e',
         name: 'OrderDetailsPage',
       );
-      // Don't show error to user as this is a background update
     }
   }
 
@@ -145,9 +164,10 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       if (mounted) {
         setState(() {
           _productDetails = _initializeProductDetails(response['itemDetails']);
-          _stockStatus = response['stockDetails'];
+          // _stockStatus = response['stockDetails'];
           _isLoading = false;
         });
+        await _updateStockStatus();
       }
     } catch (e) {
       if (mounted) {
@@ -405,7 +425,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         SizedBox(width: AppStyles.spacing8),
         _buildStockInfoItem(
           'Order Qty:',
-          '${_stockStatus['orderStock']}',
+          '${_stockStatus['OrderQty']}',
           stockColor,
         ),
       ],
