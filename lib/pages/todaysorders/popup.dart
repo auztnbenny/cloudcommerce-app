@@ -271,25 +271,35 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           double.tryParse(_productDetails['TrnCessPer']?.toString() ?? '0') ??
               0.0;
 
-      // Ensure we don't divide by zero
+      // Ensure we don't divide by zero and match React's precision
       final divisor = trnGstPer + trnCessPer + 100;
-      _productDetails['SaleRate'] =
-          divisor > 0 ? (orderRate * 100) / divisor : orderRate;
+      _productDetails['SaleRate'] = divisor > 0
+          ? double.parse(((orderRate * 100) / divisor).toStringAsFixed(2))
+          : double.parse(orderRate.toStringAsFixed(2));
 
-      // Calculate amounts
-      _productDetails['OrderAmount'] = orderRate * orderQty;
+      // Calculate amounts with precision matching React
+      _productDetails['OrderAmount'] =
+          double.parse((orderRate * orderQty).toStringAsFixed(2));
+
+      final saleRate = _productDetails['SaleRate'] ?? 0.0;
       _productDetails['TrnAmount'] =
-          (_productDetails['SaleRate'] ?? 0.0) * orderQty;
+          double.parse((saleRate * orderQty).toStringAsFixed(2));
 
-      // Calculate discounts
-      _productDetails['ItemDisAmount'] =
-          (_productDetails['OrderAmount'] ?? 0.0) * discount / 100;
-      _productDetails['TrnGrossAmt'] = (_productDetails['TrnAmount'] ?? 0.0) -
-          (_productDetails['ItemDisAmount'] ?? 0.0);
+      // Calculate discounts with precision
+      _productDetails['ItemDisAmount'] = discount > 0
+          ? double.parse(
+              ((_productDetails['OrderAmount'] ?? 0.0) * discount / 100)
+                  .toStringAsFixed(2))
+          : 0.0;
+
+      _productDetails['TrnGrossAmt'] = double.parse(
+          ((_productDetails['TrnAmount'] ?? 0.0) -
+                  (_productDetails['ItemDisAmount'] ?? 0.0))
+              .toStringAsFixed(2));
 
       final trnGrossAmt = _productDetails['TrnGrossAmt'] ?? 0.0;
 
-      // Calculate GST amounts
+      // Calculate GST amounts with precision
       final trncGstPer =
           double.tryParse(_productDetails['TrnCGSTPer']?.toString() ?? '0') ??
               0.0;
@@ -297,14 +307,26 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           double.tryParse(_productDetails['TrnSGSTPer']?.toString() ?? '0') ??
               0.0;
 
-      _productDetails['TrnCGSTAmt'] = trnGrossAmt * (trncGstPer / 100);
-      _productDetails['TrnSGSTAmt'] = trnGrossAmt * (trnsGstPer / 100);
-      _productDetails['TrnGSTAmt'] = (_productDetails['TrnCGSTAmt'] ?? 0.0) +
-          (_productDetails['TrnSGSTAmt'] ?? 0.0);
-      _productDetails['TrnNetAmount'] =
-          trnGrossAmt + (_productDetails['TrnGSTAmt'] ?? 0.0);
-      _productDetails['TrnCessAmt'] = trnGrossAmt * (trnCessPer / 100);
-      _productDetails['TotQty'] = orderQty + freeQty;
+      _productDetails['TrnCGSTAmt'] =
+          double.parse((trnGrossAmt * (trncGstPer / 100)).toStringAsFixed(2));
+
+      _productDetails['TrnSGSTAmt'] =
+          double.parse((trnGrossAmt * (trnsGstPer / 100)).toStringAsFixed(2));
+
+      _productDetails['TrnGSTAmt'] = double.parse(
+          ((_productDetails['TrnCGSTAmt'] ?? 0.0) +
+                  (_productDetails['TrnSGSTAmt'] ?? 0.0))
+              .toStringAsFixed(2));
+
+      _productDetails['TrnNetAmount'] = double.parse(
+          (trnGrossAmt + (_productDetails['TrnGSTAmt'] ?? 0.0))
+              .toStringAsFixed(2));
+
+      _productDetails['TrnCessAmt'] =
+          double.parse((trnGrossAmt * (trnCessPer / 100)).toStringAsFixed(2));
+
+      _productDetails['TotQty'] =
+          double.parse((orderQty + freeQty).toStringAsFixed(2));
     });
   }
 
