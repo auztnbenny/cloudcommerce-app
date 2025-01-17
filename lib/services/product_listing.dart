@@ -1,8 +1,6 @@
-import 'package:cloudcommerce/styles/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'dart:math';
 
 class ProductListingController extends ChangeNotifier {
   static const String imageBaseUrl =

@@ -1,38 +1,21 @@
-import 'package:cloudcommerce/pages/todaysorders/cart_styles.dart';
-import 'package:cloudcommerce/styles/app_styles.dart';
+// shopping_cart_page.dart
+import 'package:cloudcommerce/services/cart_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:cloudcommerce/styles/app_styles.dart';
+import 'package:cloudcommerce/pages/todaysorders/cart_styles.dart';
+import 'package:intl/intl.dart';
 
-class CartPage extends StatelessWidget {
-  CartPage({Key? key}) : super(key: key);
-
-  // Sample data remains the same...
-  final List<CartItem> items = [
-    CartItem(
-      name: 'Anti Hair Loss Shampoo',
-      price: 79.95,
-      quantity: 1,
-      image: 'assets/images/mockup.jpg',
-    ),
-    CartItem(
-      name: 'Anti Hair Loss Shampoo',
-      price: 58.91,
-      quantity: 1,
-      image: 'assets/images/mockup.jpg',
-    ),
-    CartItem(
-      name: 'Sea Salt Scaler',
-      price: 52.88,
-      quantity: 1,
-      image: 'assets/images/mockup.jpg',
-    ),
-  ];
+class ShoppingCartPage extends StatelessWidget {
+  ShoppingCartPage({Key? key, required List<Map<String, dynamic>> cartItems})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppStyles.backgroundColor,
       appBar: _buildAppBar(context),
-      body: _buildBody(),
+      body: _buildBody(context),
     );
   }
 
@@ -44,10 +27,6 @@ class CartPage extends StatelessWidget {
       flexibleSpace: Container(
         decoration: AppStyles.appBarDecoration,
       ),
-      // leading: IconButton(
-      //   icon: Icon(Icons.arrow_back, color: Colors.white),
-      //   onPressed: () => Navigator.of(context).pop(),
-      // ),
       title: Text(
         'Shopping Cart',
         style: AppStyles.appBarTitleStyle,
@@ -56,84 +35,84 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBody() {
-    return Column(
-      children: [
-        Expanded(
-          child: ListView.separated(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppStyles.spacing16,
-              vertical: AppStyles.spacing20,
+  Widget _buildBody(BuildContext context) {
+    return Consumer<CartProvider>(
+      builder: (context, cartProvider, child) {
+        final items = cartProvider.items;
+
+        if (items.isEmpty) {
+          return Center(
+            child: Text(
+              'Your cart is empty',
+              style: AppStyles.body1,
             ),
-            itemCount: items.length,
-            separatorBuilder: (context, index) =>
-                SizedBox(height: AppStyles.spacing16),
-            itemBuilder: (context, index) => CartItemWidget(item: items[index]),
-          ),
-        ),
-        CartSummaryWidget(
-          itemTotal: 191.74,
-          deliveryFee: 30.00,
-        ),
-      ],
+          );
+        }
+
+        return Column(
+          children: [
+            Expanded(
+              child: ListView.separated(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppStyles.spacing16,
+                  vertical: AppStyles.spacing20,
+                ),
+                itemCount: items.length,
+                separatorBuilder: (context, index) =>
+                    SizedBox(height: AppStyles.spacing16),
+                itemBuilder: (context, index) => CartItemWidget(
+                  item: items[index], onRemove: () {},
+                  // onRemove: () {
+                  //   cartProvider.removeFromCart(index);
+                  // },
+                ),
+              ),
+            ),
+            CartSummaryWidget(
+              items: items,
+            ),
+          ],
+        );
+      },
     );
   }
 }
 
-class CartItem {
-  final String name;
-  final double price;
-  final int quantity;
-  final String image;
-
-  CartItem({
-    required this.name,
-    required this.price,
-    required this.quantity,
-    required this.image,
-  });
-}
-
 class CartItemWidget extends StatelessWidget {
-  final CartItem item;
+  final Map<String, dynamic> item;
+  final VoidCallback onRemove;
 
   const CartItemWidget({
     Key? key,
     required this.item,
+    required this.onRemove,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final formatCurrency = NumberFormat.currency(symbol: '₹', decimalDigits: 2);
+
     return Container(
       padding: EdgeInsets.all(AppStyles.spacing12),
       decoration: CartStyles.itemDecoration,
       child: Row(
         children: [
-          // Product Image
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
-            child: Image.asset(
-              item.image,
-              width: 80,
-              height: 80,
-              fit: BoxFit.cover,
-            ),
-          ),
-          SizedBox(width: AppStyles.spacing12),
-
           // Product Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.name, style: CartStyles.itemNameStyle),
+                Text(
+                  item['itm_NAM'] ?? '',
+                  style: CartStyles.itemNameStyle,
+                ),
                 SizedBox(height: AppStyles.spacing4),
                 Text(
-                  '\$${item.price.toStringAsFixed(2)}',
+                  formatCurrency.format(item['OrderAmount'] ?? 0),
                   style: CartStyles.priceStyle,
                 ),
                 SizedBox(height: AppStyles.spacing8),
-                QuantityControl(quantity: item.quantity),
+                QuantityDisplay(quantity: item['OrderQty'] ?? 0),
               ],
             ),
           ),
@@ -142,7 +121,7 @@ class CartItemWidget extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.close, size: 20),
             color: AppStyles.textSecondaryColor,
-            onPressed: () {},
+            onPressed: onRemove,
             padding: EdgeInsets.zero,
             constraints: BoxConstraints(minWidth: 32, minHeight: 32),
           ),
@@ -152,62 +131,47 @@ class CartItemWidget extends StatelessWidget {
   }
 }
 
-class QuantityControl extends StatelessWidget {
-  final int quantity;
+class QuantityDisplay extends StatelessWidget {
+  final double quantity;
 
-  const QuantityControl({
+  const QuantityDisplay({
     Key? key,
     required this.quantity,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildControlButton(Icons.remove),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: AppStyles.spacing16),
-          child: Text(
-            quantity.toString(),
-            style: AppStyles.body1,
-          ),
-        ),
-        _buildControlButton(Icons.add),
-      ],
-    );
-  }
-
-  Widget _buildControlButton(IconData icon) {
     return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppStyles.spacing12,
+        vertical: AppStyles.spacing4,
+      ),
       decoration: CartStyles.quantityButtonDecoration,
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          onTap: () {},
-          borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
-          child: Padding(
-            padding: EdgeInsets.all(8),
-            child: Icon(icon, size: 16),
-          ),
-        ),
+      child: Text(
+        'Quantity: ${quantity.toStringAsFixed(0)}',
+        style: AppStyles.body2,
       ),
     );
   }
 }
 
 class CartSummaryWidget extends StatelessWidget {
-  final double itemTotal;
-  final double deliveryFee;
+  final List<Map<String, dynamic>> items;
 
   const CartSummaryWidget({
     Key? key,
-    required this.itemTotal,
-    required this.deliveryFee,
+    required this.items,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final formatCurrency = NumberFormat.currency(symbol: '₹', decimalDigits: 2);
+
+    double itemTotal = 0;
+    for (var item in items) {
+      itemTotal += item['OrderAmount'] ?? 0;
+    }
+
     return Container(
       padding: EdgeInsets.all(AppStyles.spacing16),
       decoration: CartStyles.summaryDecoration,
@@ -215,19 +179,19 @@ class CartSummaryWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildSummaryRow('Item total', itemTotal),
-          SizedBox(height: AppStyles.spacing8),
-          _buildSummaryRow('Delivery fee', deliveryFee),
           SizedBox(height: AppStyles.spacing12),
           Divider(color: AppStyles.secondaryColor.withOpacity(0.2)),
           SizedBox(height: AppStyles.spacing12),
-          _buildSummaryRow('Total', itemTotal + deliveryFee, isTotal: true),
+          _buildSummaryRow('Total', itemTotal, isTotal: true),
           SizedBox(height: AppStyles.spacing20),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                // Implement checkout functionality
+              },
               style: CartStyles.checkoutButtonStyle,
-              child: Text('Go to Checkout'),
+              child: Text('Proceed to Checkout'),
             ),
           ),
         ],
@@ -236,6 +200,7 @@ class CartSummaryWidget extends StatelessWidget {
   }
 
   Widget _buildSummaryRow(String label, double amount, {bool isTotal = false}) {
+    final formatCurrency = NumberFormat.currency(symbol: '₹', decimalDigits: 2);
     final style = isTotal ? AppStyles.h2 : AppStyles.body1;
 
     return Row(
@@ -243,7 +208,7 @@ class CartSummaryWidget extends StatelessWidget {
       children: [
         Text(label, style: style),
         Text(
-          '\$${amount.toStringAsFixed(2)}',
+          formatCurrency.format(amount),
           style: isTotal ? CartStyles.totalPriceStyle : style,
         ),
       ],

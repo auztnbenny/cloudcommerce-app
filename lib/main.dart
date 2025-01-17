@@ -1,6 +1,8 @@
 import 'package:cloudcommerce/pages/login/loginpage.dart';
+import 'package:cloudcommerce/services/cart_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'styles/app_styles.dart';
 import 'styles/bottom_nav_styles.dart';
 
@@ -14,7 +16,12 @@ void main() {
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => CartProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

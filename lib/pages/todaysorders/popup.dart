@@ -1,10 +1,14 @@
 // order_details_page.dart
+import 'package:cloudcommerce/pages/todaysorders/cart_page.dart';
 import 'package:cloudcommerce/pages/todaysorders/popup_style.dart';
+import 'package:cloudcommerce/services/cart_service.dart';
 import 'package:cloudcommerce/services/popup.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cloudcommerce/styles/app_styles.dart';
-import 'dart:developer' as developer; // Add this import
+import 'dart:developer' as developer;
+
+import 'package:provider/provider.dart'; // Add this import
 
 class OrderDetailsPage extends StatefulWidget {
   final String itemCode;
@@ -181,6 +185,19 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
   void _handleDone() {
     if (_formKey.currentState?.validate() ?? false) {
+      final orderQty = double.tryParse(_orderQtyController.text) ?? 0;
+
+      // Check if quantity is more than 0
+      if (orderQty <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please enter a quantity greater than 0'),
+            backgroundColor: AppStyles.errorColor,
+          ),
+        );
+        return;
+      }
+
       // Ensure all calculations are up to date
       _handleCalculations();
 
@@ -190,8 +207,22 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       // Add any additional fields needed for cart
       _productDetails['itm_COD'] = widget.itemCode;
 
+      // Add to cart using Provider
+      Provider.of<CartProvider>(context, listen: false)
+          .addToCart(_productDetails);
+
+      // Notify the parent
       widget.onDone(_productDetails);
-      Navigator.pop(context);
+
+      // Navigate to shopping cart
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ShoppingCartPage(
+            cartItems: Provider.of<CartProvider>(context).items,
+          ),
+        ),
+      );
     }
   }
 

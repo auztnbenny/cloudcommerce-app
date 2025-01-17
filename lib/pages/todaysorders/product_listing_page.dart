@@ -1,9 +1,11 @@
 // product_listing_page.dart
 import 'package:cloudcommerce/pages/todaysorders/popup.dart';
 import 'package:cloudcommerce/pages/todaysorders/cart_page.dart'; // Add this import
+import 'package:cloudcommerce/services/cart_service.dart';
 import 'package:cloudcommerce/services/product_listing.dart';
 import 'package:cloudcommerce/styles/app_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'product_listing_style.dart';
 
 class ProductListingPage extends StatefulWidget {
@@ -196,10 +198,9 @@ class _ProductListingPageState extends State<ProductListingPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CartPage(
-                        // orderId: widget.orderId,
-                        // userName: widget.userName,
-                        ),
+                    builder: (context) => ShoppingCartPage(
+                      cartItems: Provider.of<CartProvider>(context).items,
+                    ),
                   ),
                 );
               },
