@@ -8,6 +8,7 @@ class Order {
   final String partyName;
   final String userCode;
   final String totAmt;
+  final String totitem;
   final String delDate;
   final String remarks;
   final String accPartyName;
@@ -20,6 +21,7 @@ class Order {
     required this.partyName,
     required this.userCode,
     required this.totAmt,
+    required this.totitem,
     required this.delDate,
     required this.remarks,
     required this.accPartyName,
@@ -34,6 +36,7 @@ class Order {
       partyName: json['PartyName'] ?? '',
       userCode: json['UserCode'] ?? '',
       totAmt: json['TotAmt'] ?? '0.00',
+      totitem: json['TotCnd'] ?? '0.00',
       delDate: json['DelDate'] ?? '',
       remarks: json['Remarks'] ?? '',
       accPartyName: json['AccPartyName'] ?? '',

@@ -5,6 +5,7 @@ class CartProvider extends ChangeNotifier {
   List<Map<String, dynamic>> _items = [];
 
   List<Map<String, dynamic>> get items => _items;
+  int get cartCount => _items.length; // Add this getter
 
   void addToCart(Map<String, dynamic> product) {
     _items.add(product);

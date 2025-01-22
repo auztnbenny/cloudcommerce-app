@@ -186,9 +186,8 @@ class _ProductListingPageState extends State<ProductListingPage> {
   }
 
   Widget _buildCartButton() {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
+    return Consumer<CartProvider>(
+      builder: (context, cartProvider, child) {
         return Stack(
           children: [
             IconButton(

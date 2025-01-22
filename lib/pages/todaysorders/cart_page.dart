@@ -61,10 +61,10 @@ class ShoppingCartPage extends StatelessWidget {
                 separatorBuilder: (context, index) =>
                     SizedBox(height: AppStyles.spacing16),
                 itemBuilder: (context, index) => CartItemWidget(
-                  item: items[index], onRemove: () {},
-                  // onRemove: () {
-                  //   cartProvider.removeFromCart(index);
-                  // },
+                  item: items[index],
+                  onRemove: () {
+                    cartProvider.removeFromCart(index);
+                  },
                 ),
               ),
             ),

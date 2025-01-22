@@ -283,8 +283,8 @@ class _OrdersPageState extends State<OrdersPage> {
               Row(
                 children: [
                   Expanded(
-                      child: _buildInfoRow(
-                          'Items', '5')), // Add items count to your Order model
+                      child: _buildInfoRow('Items',
+                          '${order.totitem}')), // Add items count to your Order model
                   Expanded(
                     child: _buildInfoRow(
                       'Amount',
