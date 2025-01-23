@@ -1,5 +1,6 @@
 import 'package:cloudcommerce/pages/todaysorders/new_order_styles.dart';
 import 'package:cloudcommerce/pages/todaysorders/orders_styles.dart';
+import 'package:cloudcommerce/pages/todaysorders/payment_details.dart';
 import 'package:cloudcommerce/services/new_order_service.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -319,6 +320,25 @@ class _NewOrderPageState extends State<NewOrderPage> {
                           icon: const Icon(Icons.search),
                           onPressed: _showPartyListDialog,
                           color: OrderStyles.primaryColor,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.payment),
+                          onPressed: _selectedPartyId.isNotEmpty
+                              ? () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PaymentDetailsPage(
+                                        buyerName: _buyerNameController.text,
+                                        accAutoId: int.parse(_selectedPartyId),
+                                        year: DateTime.now().year,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              : null,
+                          color: OrderStyles.primaryColor,
+                          tooltip: 'Payment History',
                         ),
                       ],
                     ),
